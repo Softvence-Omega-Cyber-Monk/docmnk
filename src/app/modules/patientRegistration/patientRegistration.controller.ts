@@ -60,6 +60,7 @@ const registerPatient = async (req: Request, res: Response) => {
       occupation,
       address,
       medicalHistory: parsedMedicalHistory,
+      lifestyleAndSubstanceUse: JSON.parse(req.body.lifestyleAndSubstanceUse || "{}"),
     };
 
     const patient = await PatientRegistrationService.createPatientRegistration(data);
