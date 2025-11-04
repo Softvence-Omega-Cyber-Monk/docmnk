@@ -16,11 +16,20 @@ export interface IMedicalCondition {
 }
 
 export interface IMedicalHistory {
-  diabetesMellitus: IMedicalCondition;
-  hypertension: IMedicalCondition;
-  dyslipidemia: IMedicalCondition;
-  hypothyroid: IMedicalCondition;
-  hyperthyroid: IMedicalCondition;
+  diabetesMellitus?: IMedicalCondition;
+  hypertension?: IMedicalCondition;
+  dyslipidemia?: IMedicalCondition;
+  hypothyroid?: IMedicalCondition;
+  chronicKidneyDisease?: IMedicalCondition;
+  chronicLiverDisease?: IMedicalCondition;
+  stroke?: IMedicalCondition;
+  cardiovascularDisease?: IMedicalCondition;
+  drugAllergies?: string;
+  foodAllergies?: string;
+  otherComorbidities?: string;
+  surgicalHistory?: string;
+  currentActiveMedications?: string;
+  previousReports?: string[]; // URLs to previouse reports if any are stored in the cloud
 }
 
 export interface IPatientRegistration {
