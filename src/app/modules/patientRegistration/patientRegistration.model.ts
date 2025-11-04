@@ -1,5 +1,5 @@
 import { Schema, model, Document } from "mongoose";
-import { IPatientRegistration, IMedicalCondition, IMedicalHistory } from "./patientRegistration.interface";
+import { IPatientRegistration, IMedicalCondition, IMedicalHistory, ISmokingHistory, ITobaccoChewing, IBetelNutUse, IAlcoholUse, ISubstanceUse, ILifestyleAndSubstanceUse } from "./patientRegistration.interface";
 import { fa } from "zod/v4/locales";
 
 export interface IPatientRegistrationModel extends IPatientRegistration, Document {}
@@ -39,6 +39,99 @@ const MedicalHistorySchema = new Schema<IMedicalHistory>(
   { _id: false, strict: false }
 );
 
+// Sub-schema for smoking history
+const SmokingHistorySchema = new Schema<ISmokingHistory>(
+  {
+    status: {
+      type: String,
+      enum: ["Current Smoker", "Former Smoker", "Never Smoked"],
+      required: true
+    },
+    cigarettes: {
+      numberOfCigarettesPerDay: { type: Number },
+      yearsSmoked: { type: Number },
+      packYears: { type: Number }
+    },
+    beedis: {
+      numberOfBeedisPerDay: { type: Number },
+      yearsSmoked: { type: Number }
+    }
+  },
+  { _id: false }
+);
+
+// Sub-schema for tobacco chewing
+const TobaccoChewingSchema = new Schema<ITobaccoChewing>(
+  {
+    type: {
+      type: String,
+      enum: ["Cigarettes", "Beedis", "Chewing Tobacco", "Khatri", "Other"],
+      required: true
+    },
+    brand: { type: String },
+    amountPerDay: { type: Number },
+    yearsOfUse: { type: Number }
+  },
+  { _id: false }
+);
+
+// Sub-schema for betel nut use
+const BetelNutUseSchema = new Schema<IBetelNutUse>(
+  {
+    type: {
+      type: String,
+      enum: ["Betel Nut", "Pan", "Betel Leaf", "Other"],
+      required: true
+    },
+    amountPerDay: { type: Number },
+    yearsOfUse: { type: Number }
+  },
+  { _id: false }
+);
+
+// Sub-schema for alcohol use
+const AlcoholUseSchema = new Schema<IAlcoholUse>(
+  {
+    unitsPerWeek: { type: Number }
+  },
+  { _id: false }
+);
+
+// Sub-schema for other substances
+const OtherSubstanceSchema = new Schema(
+  {
+    name: { type: String, required: true },
+    frequency: { type: String },
+    yearsOfUse: { type: Number },
+    route: { type: String },
+    treatmentStatus: {
+      type: String,
+      enum: ["On Treatment", "Not on Treatment", "Completed", "Unknown"]
+    }
+  },
+  { _id: false }
+);
+
+// Sub-schema for substance use
+const SubstanceUseSchema = new Schema<ISubstanceUse>(
+  {
+    otherSubstances: [OtherSubstanceSchema]
+  },
+  { _id: false }
+);
+
+// Sub-schema for lifestyle and substance use
+const LifestyleAndSubstanceUseSchema = new Schema<ILifestyleAndSubstanceUse>(
+  {
+    smokingHistory: { type: SmokingHistorySchema },
+    tobaccoChewing: [TobaccoChewingSchema],
+    betelNutUse: [BetelNutUseSchema],
+    alcoholUse: { type: AlcoholUseSchema },
+    substanceUse: { type: SubstanceUseSchema }
+  },
+  { _id: false }
+);
+
 // Main schema for patient registration
 const PatientRegistrationSchema = new Schema<IPatientRegistrationModel>(
   {
@@ -50,6 +143,7 @@ const PatientRegistrationSchema = new Schema<IPatientRegistrationModel>(
     occupation: { type: String },
     address: { type: String, required: true },
     medicalHistory: { type: MedicalHistorySchema, required: true },
+    lifestyleAndSubstanceUse: { type: LifestyleAndSubstanceUseSchema, required: true },
   },
   {
     timestamps: true,

@@ -8,6 +8,65 @@ export type TreatmentStatus =
   | "Completed"
   | "Unknown";
 
+export type SmokingStatus = "Current Smoker" | "Former Smoker" | "Never Smoked";
+
+export type TobaccoType =
+  | "Cigarettes"
+  | "Beedis"
+  | "Chewing Tobacco"
+  | "Khatri"
+  | "Other";
+
+export type BetelNutType = "Betel Nut" | "Pan" | "Betel Leaf" | "Other";
+
+export interface ISmokingHistory {
+  status: SmokingStatus;
+  cigarettes?: {
+    numberOfCigarettesPerDay?: number;
+    yearsSmoked?: number;
+    packYears?: number;
+  };
+  beedis?: {
+    numberOfBeedisPerDay?: number;
+    yearsSmoked?: number;
+  };
+}
+
+export interface ITobaccoChewing {
+  type: TobaccoType;
+  brand?: string;
+  amountPerDay?: number;
+  yearsOfUse?: number;
+}
+
+export interface IBetelNutUse {
+  type: BetelNutType;
+  amountPerDay?: number;
+  yearsOfUse?: number;
+}
+
+export interface IAlcoholUse {
+  unitsPerWeek?: number;
+}
+
+export interface ISubstanceUse {
+  otherSubstances?: {
+    name: string;
+    frequency?: string;
+    yearsOfUse?: number;
+    route?: string;
+    treatmentStatus?: TreatmentStatus;
+  }[];
+}
+
+export interface ILifestyleAndSubstanceUse {
+  smokingHistory?: ISmokingHistory;
+  tobaccoChewing?: ITobaccoChewing[];
+  betelNutUse?: IBetelNutUse[];
+  alcoholUse?: IAlcoholUse;
+  substanceUse?: ISubstanceUse;
+}
+
 export interface IMedicalCondition {
   isChecked: boolean; // if the checkbox is selected
   durationYears?: number;
@@ -42,4 +101,5 @@ export interface IPatientRegistration {
   address: string;
 
   medicalHistory: IMedicalHistory;
+  lifestyleAndSubstanceUse: ILifestyleAndSubstanceUse;
 }
