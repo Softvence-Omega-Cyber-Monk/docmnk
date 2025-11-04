@@ -16,6 +16,10 @@ export const configs = {
     front_end_url: process.env.FRONT_END_URL || "https://docmnk.netlify.app/",
     verified_token: process.env.VERIFIED_TOKEN || "",
   },
+  // Add bcrypt configuration
+  bcrypt: {
+    salt_rounds: parseInt(process.env.BCRYPT_SALT_ROUNDS || "12"),
+  },
   email: {
     app_email: process.env.APP_USER_EMAIL!,
     app_password: process.env.APP_PASSWORD!,
