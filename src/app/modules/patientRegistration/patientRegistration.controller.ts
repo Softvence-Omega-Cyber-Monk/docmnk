@@ -233,7 +233,24 @@ const registerPatient = async (req: Request, res: Response) => {
     });
   }
 };
+const getSinglePatient = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const patient = await PatientRegistrationService.getSinglePatient(id);
 
+    res.status(200).json({
+      success: true,
+      message: "✅ Patient fetched successfully",
+      data: patient,
+    });
+  } catch (error: any) {
+    res.status(404).json({
+      success: false,
+      message: error.message || "Patient not found",
+    });
+  }
+};
 export const PatientRegistrationController = {
   registerPatient,
+  getSinglePatient,
 };
