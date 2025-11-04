@@ -20,5 +20,8 @@ router.post(
   PatientRegistrationController.registerPatient
 );
 
+// Get single patient by ID
+router.get('/:id', PatientRegistrationController.getSinglePatient);
+
 
 export const PatientRegistrationRoutes = router;
