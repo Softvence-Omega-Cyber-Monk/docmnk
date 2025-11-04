@@ -9,6 +9,17 @@ const createPatientRegistration = async (
   return patient;
 };
 
+const getSinglePatient = async (id: string) => {
+  const patient = await PatientRegistration.findById(id);
+
+  if (!patient) {
+    throw new Error("Patient not found");
+  }
+
+  return patient;
+};
+
 export const PatientRegistrationService = {
   createPatientRegistration,
+  getSinglePatient,
 };
