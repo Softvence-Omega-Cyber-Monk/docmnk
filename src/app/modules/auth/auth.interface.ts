@@ -4,7 +4,7 @@ export type TAccount = {
     lastPasswordChange?: Date;
     isDeleted?: boolean;
     accountStatus?: "ACTIVE" | "INACTIVE" | "SUSPENDED";
-    role?: "USER" | "ADMIN" | "VOLUNTEER" | "CLINICIAN";
+    role?: "USER" | "ADMIN" | "VOLUNTEER" | "CLINICIAN" | "SuperAdmin";
     isVerified?: boolean;
 }
 
@@ -20,5 +20,5 @@ export type TLoginPayload = {
 
 export type TJwtUser = {
     email: string;
-    role?: "USER" | "ADMIN" | "VOLUNTEER" | "CLINICIAN";
+    role?: "USER" | "ADMIN" | "VOLUNTEER" | "CLINICIAN" | "SuperAdmin";
 }
