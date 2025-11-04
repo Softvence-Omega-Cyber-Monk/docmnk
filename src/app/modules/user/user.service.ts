@@ -1,8 +1,8 @@
-import { Request } from "express"
-import uploadCloud from "../../utils/cloudinary";
+import { Request } from "express";
 import { User_Model } from "./user.schema";
 import { Account_Model } from "../auth/auth.schema";
 import { TUser } from "./user.interface";
+import { upload, uploadImgToCloudinary } from "../../utils/cloudinary";
 
 
 // Create new user
@@ -24,16 +24,39 @@ const getUserById = async (userId: string) => {
 };
 
 const update_profile_into_db = async (req: Request) => {
-    // upload file and get link
+  try {
+    // ✅ Upload file if provided
     if (req.file) {
-        const uploadedImage = await uploadCloud(req.file);
-        req.body.photo = uploadedImage?.secure_url;
-    };
+      const file = req.file;
+      const imageName = `profile-${Date.now()}-${file.originalname.split(".")[0]}`;
 
-    const isExistUser = await Account_Model.findOne({ email: req?.user?.email }).lean()
-    const result = await User_Model.findOneAndUpdate({ accountId: isExistUser!._id }, req?.body)
-    return result
-}
+      const uploadedImage = await uploadImgToCloudinary(
+        imageName,
+        file.path,
+        "user/profiles"
+      );
+
+      // Attach the uploaded URL to request body
+      req.body.photo = uploadedImage?.secure_url;
+    }
+
+    // ✅ Find the account by the authenticated user email
+    const isExistUser = await Account_Model.findOne({ email: req?.user?.email }).lean();
+    if (!isExistUser) throw new Error("User account not found");
+
+    // ✅ Update user document
+    const result = await User_Model.findOneAndUpdate(
+      { accountId: isExistUser._id },
+      req.body,
+      { new: true } // return the updated document
+    );
+
+    return result;
+  } catch (error) {
+    console.error("Error updating profile:", error);
+    throw error;
+  }
+};
 
 
 
