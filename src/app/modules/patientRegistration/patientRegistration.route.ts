@@ -9,19 +9,49 @@ const router = express.Router();
 
 // Use this in your route
 router.post(
-  '/create',
+  "/create",
   upload.fields([
-    { name: 'previousReport', maxCount: 1 },
-    { name: 'abiReport', maxCount: 5 },
-    { name: 'tcpo2Report', maxCount: 5 },
-    { name: 'monofilamentReport', maxCount: 5 },
-    { name: 'vibrothermReport', maxCount: 5 }
+    { name: "previousReport", maxCount: 1 },
+    { name: "abiReport", maxCount: 5 },
+    { name: "tcpo2Report", maxCount: 5 },
+    { name: "monofilamentReport", maxCount: 5 },
+    { name: "vibrothermReport", maxCount: 5 },
   ]),
   PatientRegistrationController.registerPatient
 );
+// Get all patients
+router.get("/getAll", PatientRegistrationController.getAllPatients);
 
 // Get single patient by ID
-router.get('/:id', PatientRegistrationController.getSinglePatient);
+router.get("/:id", PatientRegistrationController.getSinglePatient);
 
+// update medical history
+router.put(
+  "/updateMedicalHistory/:id",
+  upload.fields([{ name: "previousReport" }]),
+  PatientRegistrationController.updateMedicalHistory
+);
+// update lifestyle and substance use
+router.put(
+  "/updateLifestyleAndSubstanceUse/:id",
+  PatientRegistrationController.updateLifestyleAndSubstanceUse
+);
+// update dietary and activity assessment
+router.put(
+  "/updateDietaryActivityAssessment/:id",
+  PatientRegistrationController.updateDietaryActivityAssessment
+);
+
+// update clinical assessment
+router.put(
+  "/updateClinicalAssessment/:id",
+  upload.fields([
+    { name: "abiReport", maxCount: 10 },
+    { name: "tcpo2Report", maxCount: 10 },
+    { name: "monofilamentReport", maxCount: 10 },
+    { name: "vibrothermReport", maxCount: 10 },
+  ]),
+  PatientRegistrationController.updateClinicalAssessment
+);
 
 export const PatientRegistrationRoutes = router;
