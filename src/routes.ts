@@ -4,6 +4,7 @@ import authRoute from './app/modules/auth/auth.route';
 import userRoute from './app/modules/user/user.route';
 import { PatientRegistrationRoutes } from './app/modules/patientRegistration/patientRegistration.route';
 import { eventManagementRouter } from './app/modules/eventManagements/eventManagement.route';
+import { patientManagementRoute } from './app/modules/patientManagements/patientManagement.route';
 
 
 
@@ -15,6 +16,7 @@ const moduleRoutes = [
     { path: "/user", route: userRoute },
     { path: "/patient-registration", route: PatientRegistrationRoutes },
     { path: "/event-management", route: eventManagementRouter},
+    { path: "/patient-management", route: patientManagementRoute },
 
 
 ];

@@ -11,6 +11,9 @@ import { User_Model } from './app/modules/user/user.schema';
 
 // define app
 const app = express()
+// Important: parse JSON bodies
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // middleware
 app.use(cors({
