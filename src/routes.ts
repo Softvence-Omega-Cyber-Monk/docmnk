@@ -1,7 +1,10 @@
 import { Router } from 'express';
+import path from 'path';
 import authRoute from './app/modules/auth/auth.route';
 import userRoute from './app/modules/user/user.route';
 import { PatientRegistrationRoutes } from './app/modules/patientRegistration/patientRegistration.route';
+import { eventManagementRouter } from './app/modules/eventManagements/eventManagement.route';
+
 
 
 
@@ -11,6 +14,7 @@ const moduleRoutes = [
     { path: '/auth', route: authRoute },
     { path: "/user", route: userRoute },
     { path: "/patient-registration", route: PatientRegistrationRoutes },
+    { path: "/event-management", route: eventManagementRouter},
 
 
 ];
