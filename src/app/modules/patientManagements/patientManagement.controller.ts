@@ -79,10 +79,100 @@ const updatePatientManagement = async (req: Request, res: Response) => {
   }
 };
 
+// ✅ Get all compliance
+const getAllCompliance = async (req: Request, res: Response) => {
+  try {
+    const data = await PatientManagementService.getAllCompliance();
+    const complianceData = data.map(item => ({
+      patientManagementId : item._id,
+      patientId: item.patientId,
+      waitTime: item.waitTime,
+      complianceStatus: item.complianceStatus
+    }));
+    res.status(200).json({ success: true, data: complianceData });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// ✅ Get single compliance
+const getSingleCompliance = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    
+    if (!id) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'ID is required' 
+      });
+    }
+
+    const data = await PatientManagementService.getSingleCompliance(id);
+    
+    const complianceData = {
+      patientManagementId: data._id,
+      patientId: data.patientId,
+      waitTime: data.waitTime,
+      complianceStatus: data.complianceStatus,
+    };
+    
+    res.status(200).json({ success: true, data: complianceData });
+  } catch (error: any) {
+    if (error.message === 'Compliance record not found') {
+      return res.status(404).json({ success: false, message: error.message });
+    }
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// ✅ Update compliance status by ID
+const updateComplianceStatus = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { complianceStatus } = req.body;
+
+    if (complianceStatus !== "Complete" && complianceStatus !== "Pending") {
+      return res.status(400).json({ success: false, message: "Invalid complianceStatus value" });
+    }
+
+    const updatedRecord = await PatientManagementService.updateComplianceStatus(id, complianceStatus);
+
+    // ✅ Return updated DB record
+    const complianceData = {
+      patientManagementId: updatedRecord._id,
+      patientId: updatedRecord.patientId,
+      waitTime: updatedRecord.waitTime,
+      complianceStatus: updatedRecord.complianceStatus,
+    };
+
+    return res.status(200).json({ success: true, data: complianceData });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+
+// Export all patient data as CSV
+const exportAllPatientDataCsv = async (req: Request, res: Response) => {
+  try {
+    const csvData = await PatientManagementService.exportAllPatientDataCsv();
+    res.header("Content-Type", "text/csv");
+    res.attachment("patient-data.csv");
+    return res.send(csvData);
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+
 // ✅ Single exported controller object
 export const PatientManagementController = {
   createPatientManagement,
   getAllPatientManagement,
   getPatientManagementById,
   updatePatientManagement,
+  getAllCompliance,
+  getSingleCompliance,
+  updateComplianceStatus,
+  exportAllPatientDataCsv,
 };

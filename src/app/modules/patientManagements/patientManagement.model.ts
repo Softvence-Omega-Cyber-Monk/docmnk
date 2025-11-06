@@ -16,6 +16,7 @@ const patientManagementSchema = new Schema<IpatientManagement>(
       default: "Wating for Registration",
     },
     waitTime: { type: String, required: true },
+    complianceStatus: { type: String, enum: ["Complete", "Pending"] },
   },
   {
     versionKey: false,
