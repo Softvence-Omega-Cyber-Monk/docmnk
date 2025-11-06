@@ -6,6 +6,7 @@ import { PatientRegistrationRoutes } from './app/modules/patientRegistration/pat
 import { eventManagementRouter } from './app/modules/eventManagements/eventManagement.route';
 import { patientManagementRoute } from './app/modules/patientManagements/patientManagement.route';
 import { UserManagementRoutes } from './app/modules/userManagements/userManagement.route';
+import { NotificationRoutes } from './app/modules/notifications/notification.route';
 
 
 
@@ -19,6 +20,7 @@ const moduleRoutes = [
     { path: "/event-management", route: eventManagementRouter},
     { path: "/patient-management", route: patientManagementRoute },
     { path: "/user-management", route: UserManagementRoutes },
+    { path: "/notification", route: NotificationRoutes }
 
 
 ];
