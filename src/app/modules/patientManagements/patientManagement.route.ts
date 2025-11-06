@@ -7,12 +7,30 @@ const router = Router();
 router.post("/create", PatientManagementController.createPatientManagement);
 
 // ✅ Get all patient management records
-router.get("/", PatientManagementController.getAllPatientManagement);
+router.get("/getAll", PatientManagementController.getAllPatientManagement);
 
 // ✅ Get single patient management record by ID
-router.get("/:id", PatientManagementController.getPatientManagementById);
+router.get(
+  "/getSingle/:id",
+  PatientManagementController.getPatientManagementById
+);
 
 // ✅ Update patient management record by ID
-router.put("/:id", PatientManagementController.updatePatientManagement);
+router.put("/update/:id", PatientManagementController.updatePatientManagement);
+// ✅ Get all patient compliance records
+router.get("/getAllCompliance", PatientManagementController.getAllCompliance);
+
+// Get single compliance record
+router.get(
+  "/getSingleCompliance/:id",
+  PatientManagementController.getSingleCompliance
+);
+
+// Update compliance status
+router.put(
+  "/updateComplianceStatus/:id",PatientManagementController.updateComplianceStatus);
+
+// Export all patient data as CSV
+router.get("/allCompliance/export/csv", PatientManagementController.exportAllPatientDataCsv);
 
 export const patientManagementRoute = router;
