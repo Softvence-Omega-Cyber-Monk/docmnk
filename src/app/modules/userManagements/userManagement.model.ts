@@ -10,7 +10,7 @@ const CompanyInformationSchema = new Schema<ICompanyInformation>(
     role: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     phoneNumber: { type: String, required: true },
-    companyName: { type: String, required: true },
+    password: { type: String, required: true },
     isReferred: { type: Boolean, default: false },
   },
   { _id: false }
