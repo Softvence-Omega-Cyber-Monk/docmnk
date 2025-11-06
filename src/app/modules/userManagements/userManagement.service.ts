@@ -3,29 +3,57 @@ import { UserManagementModel } from "./userManagement.model";
 import { Account_Model } from "../auth/auth.schema";
 import { IUserManagement } from "./userManagement.interface";
 import { TAccount } from "../auth/auth.interface";
+import { User_Model } from "../user/user.schema";
+import { TUser } from "../user/user.interface";
+import bcrypt from "bcrypt"
 
-// 🟢 Create new user
-const createUserManagement = async (data: IUserManagement) => {
-  // Create UserManagement document
-  const user = await UserManagementModel.create(data);
+export const createUserManagement = async (data: IUserManagement) => {
+  // 🔐 Hash password before saving
+  const hashedPassword = await bcrypt.hash(data.companyInfo.password, 10);
+
+  // Create UserManagement document with hashed password
+  const user = await UserManagementModel.create({
+    ...data,
+    companyInfo: {
+      ...data.companyInfo,
+      password: hashedPassword,
+    },
+  });
 
   // Check if already exists in Auth
-  const existingAuth = await Account_Model.findOne({ email: data.companyInfo.email });
+  const existingAuth = await Account_Model.findOne({
+    email: data.companyInfo.email,
+  });
 
   if (existingAuth) {
     // Update existing Auth account
     existingAuth.role = data.companyInfo.role as TAccount["role"];
+    existingAuth.password = hashedPassword;
     existingAuth.isVerified = data.verificationStatus === "verified";
-    existingAuth.accountStatus = data.status === "active" ? "ACTIVE" : "INACTIVE";
+    existingAuth.accountStatus =
+      data.status === "active" ? "ACTIVE" : "INACTIVE";
     await existingAuth.save();
   } else {
-    // Throw error if not found
-    throw new Error("Auth account not found for the provided email.");
-    
+    // Create new Auth account
+    const newAccount = await Account_Model.create({
+      email: data.companyInfo.email,
+      password: hashedPassword,
+      role: data.companyInfo.role as TAccount["role"],
+      isVerified: data.verificationStatus === "verified",
+      accountStatus: data.status === "active" ? "ACTIVE" : "INACTIVE",
+    });
+
+    // Create linked user entry
+    const userPayload: TUser = {
+      name: data.companyInfo.clientName,
+      accountId: newAccount._id,
+    };
+    await User_Model.create(userPayload);
   }
 
   return user;
 };
+
 
 // 🟡 Get all users
 const getAllUsers = async () => {
@@ -38,8 +66,13 @@ const getSingleUser = async (id: string) => {
 };
 
 // 🔵 Update user (and sync with Auth)
-const updateUserManagement = async (id: string, updateData: Partial<IUserManagement>) => {
-  const user = await UserManagementModel.findByIdAndUpdate(id, updateData, { new: true });
+const updateUserManagement = async (
+  id: string,
+  updateData: Partial<IUserManagement>
+) => {
+  const user = await UserManagementModel.findByIdAndUpdate(id, updateData, {
+    new: true,
+  });
   if (!user) throw new Error("User not found");
 
   const auth = await Account_Model.findOne({ email: user.companyInfo.email });
