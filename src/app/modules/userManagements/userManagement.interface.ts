@@ -3,7 +3,7 @@ export interface ICompanyInformation {
   role: string;
   email: string;
   phoneNumber: string;
-  companyName: string;
+  password: string;
   isReferred: boolean;
 }
 
