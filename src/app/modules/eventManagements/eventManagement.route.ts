@@ -6,8 +6,8 @@ const router = Router();
 // Camp routes
 router.post("/create", EventManagementController.createCamp);
 router.get("/getall", EventManagementController.getAllCamps);
-router.get("/:id", EventManagementController.getSingleCamp);
-router.put("/:id", EventManagementController.updateCamp);
+router.get("/getSingle/:id", EventManagementController.getSingleCamp);
+router.put("/update/:id", EventManagementController.updateCamp);
 router.delete("/deletCamp/:id", EventManagementController.deleteCamp);
 
 export const eventManagementRouter = router;
