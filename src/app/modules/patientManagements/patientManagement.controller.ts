@@ -10,14 +10,7 @@ const createPatientManagement = async (req: Request, res: Response) => {
 
     // Check if record already exists
     const existing = await PatientManagementModel.findOne({ patientId });
-    if (existing) {
-      return res
-        .status(400)
-        .json({
-          message:
-            "Patient management record already exists for this patientId",
-        });
-    }
+    
 
     // Fetch patient from PatientRegistration
     const patientRecord = await PatientRegistration.findById(patientId).select(
