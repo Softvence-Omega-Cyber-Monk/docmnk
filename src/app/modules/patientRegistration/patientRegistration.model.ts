@@ -403,7 +403,7 @@ const PatientRegistrationSchema = new Schema<IPatientRegistrationModel>(
     dateOfBirth: { type: Date, required: true },
     age: { type: Number, required: true },
     phoneNumber: { type: String, required: true },
-    email: {type: String},
+    email: {type: String, required: true},
     occupation: { type: String },
     address: { type: String, required: true },
     medicalHistory: { type: MedicalHistorySchema, required: true },
