@@ -423,6 +423,7 @@ export interface IPatientRegistration {
   dateOfBirth: Date | string;
   age: number;
   phoneNumber: string;
+  email?: string;
   occupation?: string;
   address: string;
 
