@@ -406,6 +406,16 @@ const PatientRegistrationSchema = new Schema<IPatientRegistrationModel>(
     email: {type: String, required: true},
     occupation: { type: String },
     address: { type: String, required: true },
+    status: {
+      type: String,
+      enum: [
+        "Wating for Registration",
+        "Waiting for Vitals",
+        "Waiting for Consultation",
+        "Screening Complete",
+      ],
+      default: "Wating for Registration",
+    },
     medicalHistory: { type: MedicalHistorySchema, required: true },
     lifestyleAndSubstanceUse: { type: LifestyleAndSubstanceUseSchema},
     dietaryActivityAssessment: { type: DietaryActivityAssessmentSchema },
