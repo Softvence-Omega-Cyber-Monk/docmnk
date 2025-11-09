@@ -426,7 +426,7 @@ export interface IPatientRegistration {
   email?: string;
   occupation?: string;
   address: string;
-
+  status?: 'Wating for Registration' | 'Waiting for Vitals' | 'Waiting for Consultation' | 'Screening Complete';
   // Medical & Lifestyle Sections
   medicalHistory: IMedicalHistory;
   lifestyleAndSubstanceUse?: ILifestyleAndSubstanceUse;

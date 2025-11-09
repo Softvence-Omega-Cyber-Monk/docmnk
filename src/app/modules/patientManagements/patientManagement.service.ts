@@ -1,10 +1,18 @@
 import { PatientManagementModel } from "./patientManagement.model";
 import { IpatientManagement } from "./patientManagement.interface";
 import { Parser } from "json2csv"; // ✅ add this import
+import { PatientRegistration } from "../patientRegistration/patientRegistration.model";
 
 // ✅ Create a patient management record
 const createPatientManagement = async (payload: IpatientManagement) => {
   const patient = await PatientManagementModel.create(payload);
+  if (payload.patientId) {
+    await PatientRegistration.findByIdAndUpdate(
+      payload.patientId,
+      {status: payload.status},
+      {new: true}
+    );
+  }
   return patient;
 };
 
@@ -31,6 +39,14 @@ const updatePatientManagement = async (id: string, updateData: Partial<IpatientM
 
   if (!patient) {
     throw new Error("Patient not found");
+  }
+
+  if (patient.patientId) {
+    await PatientRegistration.findByIdAndUpdate(
+      patient.patientId,
+      {status: patient.status},
+      {new: true}
+    );
   }
 
   return patient;
