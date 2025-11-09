@@ -14,7 +14,7 @@ const getSinglePatient = async (id: string) => {
 
   if (!patient) {
     throw new Error("Patient not found");
-  }
+  } 
 
   return patient;
 };
