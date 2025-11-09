@@ -39,7 +39,7 @@ app.get('/', (req: Request, res: Response) => {
 export const createDefaultSuperAdmin = async () => {
   try {
     const existingAdmin = await Account_Model.findOne({
-      email: "rimelchowdhury01@gmail.com",
+      email: "superadmin@gmail.com",
     });
 
     const hashedPassword = await bcrypt.hash(
@@ -50,7 +50,7 @@ export const createDefaultSuperAdmin = async () => {
     if (!existingAdmin) {
       const newAccount = await Account_Model.create({
         name: "docmnk SuperAdmin",
-        email: "rimelchowdhury01@gmail.com",
+        email: "superadmin@gmail.com",
         password: hashedPassword,
         confirmPassword: hashedPassword,
         role: "SuperAdmin",
