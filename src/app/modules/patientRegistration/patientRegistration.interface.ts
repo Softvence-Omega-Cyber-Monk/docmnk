@@ -427,6 +427,7 @@ export interface IPatientRegistration {
   occupation?: string;
   address: string;
   status?: 'Wating for Registration' | 'Waiting for Vitals' | 'Waiting for Consultation' | 'Screening Complete';
+  campName?: string;
   // Medical & Lifestyle Sections
   medicalHistory: IMedicalHistory;
   lifestyleAndSubstanceUse?: ILifestyleAndSubstanceUse;
