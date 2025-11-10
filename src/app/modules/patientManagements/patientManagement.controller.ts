@@ -2,11 +2,12 @@ import { Request, Response } from "express";
 import { PatientManagementService } from "./patientManagement.service";
 import { PatientRegistration } from "../patientRegistration/patientRegistration.model";
 import { PatientManagementModel } from "./patientManagement.model";
+import { CampModel } from "../eventManagements/eventManagement.model";
 
 // ✅ Create patient management
 const createPatientManagement = async (req: Request, res: Response) => {
   try {
-    const { patientId, status, waitTime } = req.body;
+    const { patientId,campId, status, waitTime } = req.body;
 
     // Check if record already exists
     const existing = await PatientManagementModel.findOne({ patientId });
@@ -22,10 +23,21 @@ const createPatientManagement = async (req: Request, res: Response) => {
         .json({ message: "Patient not found in registration" });
     }
 
+    // Fetch camp from camp model
+    const campRecord = await CampModel.findById(campId).select("campName");
+    if (!campRecord) {
+      return res
+        .status(404)
+        .json({ message: "Camp not found in camp model" });
+    }
+
+
     // Create patient management record with name populated
     const patientManagement =
       await PatientManagementService.createPatientManagement({
         patientId,
+        campId,
+        campName: campRecord.campName,
         patientName: patientRecord.fullName,
         status,
         waitTime,
