@@ -5,6 +5,8 @@ export interface ICamp {
   status: 'Ongoing' | 'Upcoming' | 'Completed';
   assignAdmin: string;
   avgTime: number;
+  patientToday?:number;
+  completion?: number;
   createdAt?: Date;
   updatedAt?: Date;
 }
