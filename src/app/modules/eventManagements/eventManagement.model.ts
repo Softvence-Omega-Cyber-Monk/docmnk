@@ -8,6 +8,8 @@ const campSchema = new Schema<ICamp>(
     status: { type: String, enum: ["Ongoing", "Upcoming", "Completed"], required: true },
     assignAdmin: { type: String, required: true },
     avgTime: { type: Number, required: true},
+    patientToday: { type: Number },
+    completion: { type: Number },
   },
   {
     versionKey: false,
