@@ -16,6 +16,35 @@ export const deleteFile = async (filePath: string) => {
   }
 };
 
+// export const uploadImgToCloudinary = async (
+//   name: string,
+//   filePath: string,
+//   folder: string
+// ) => {
+//   cloudinary.config({
+//     cloud_name: configs.cloudinary.cloud_name,
+//     api_key: configs.cloudinary.cloud_api_key,
+//     api_secret: configs.cloudinary.cloud_api_secret,
+//   });
+
+//   try {
+//     const uploadResult = await cloudinary.uploader.upload(filePath, {
+//       folder,
+//       public_id: name,
+//       timeout: 60000,
+//     });
+
+//     console.log("upload result ", uploadResult);
+
+//     return uploadResult;
+//   } catch (error) {
+//     console.error("Error uploading image to Cloudinary:", error);
+//     throw new Error("Image upload failed");
+//   } finally {
+//     await deleteFile(filePath); // Always clean up
+//   }
+// };
+
 export const uploadImgToCloudinary = async (
   name: string,
   filePath: string,
@@ -28,23 +57,43 @@ export const uploadImgToCloudinary = async (
   });
 
   try {
-    console.log("naemedfdf---", name, filePath);
+    const ext = path.extname(filePath).toLowerCase();
+    const isPDF = ext === ".pdf";
+
+    // Upload file
     const uploadResult = await cloudinary.uploader.upload(filePath, {
       folder,
       public_id: name,
+      resource_type: isPDF ? "raw" : "image",
+      type: "authenticated", // 👈 private upload
       timeout: 60000,
     });
 
-    console.log("upload result ", uploadResult);
+    console.log("✅ File uploaded to Cloudinary:", uploadResult.public_id);
 
-    return uploadResult;
+    // Generate signed URL if it’s a PDF (private file)
+    let secureUrl = uploadResult.secure_url;
+
+    if (isPDF) {
+      secureUrl = cloudinary.url(`${folder}/${name}.pdf`, {
+        resource_type: "raw",
+        sign_url: true,
+        secure: true,
+        expires_at: Math.floor(Date.now() / 1000) + 3600, // 1 hour validity
+      });
+      console.log("🔒 Generated secure PDF URL:", secureUrl);
+    }
+
+    return { ...uploadResult, secure_url: secureUrl };
   } catch (error) {
-    console.error("Error uploading image to Cloudinary:", error);
-    throw new Error("Image upload failed");
+    console.error("❌ Error uploading file to Cloudinary:", error);
+    throw new Error("File upload failed");
   } finally {
-    await deleteFile(filePath); // Always clean up
+    await deleteFile(filePath);
   }
 };
+
+
 
 export const uploadMultipleImages = async (
   filePaths: string[],
@@ -119,3 +168,4 @@ export const MultiUpload = upload.fields([
   { name: "photo1", maxCount: 1 },
   { name: "photo2", maxCount: 1 },
 ]);
+

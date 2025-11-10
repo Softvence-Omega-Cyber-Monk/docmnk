@@ -7,6 +7,7 @@ const campSchema = new Schema<ICamp>(
     location: { type: String, required: true },
     status: { type: String, enum: ["Ongoing", "Upcoming", "Completed"], required: true },
     assignAdmin: { type: String, required: true },
+    avgTime: { type: Number, required: true},
   },
   {
     versionKey: false,

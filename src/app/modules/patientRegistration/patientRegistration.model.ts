@@ -416,6 +416,7 @@ const PatientRegistrationSchema = new Schema<IPatientRegistrationModel>(
       ],
       default: "Wating for Registration",
     },
+    campName: { type: String },
     medicalHistory: { type: MedicalHistorySchema, required: true },
     lifestyleAndSubstanceUse: { type: LifestyleAndSubstanceUseSchema},
     dietaryActivityAssessment: { type: DietaryActivityAssessmentSchema },
