@@ -4,6 +4,7 @@ export interface ICamp {
   location: string;
   status: 'Ongoing' | 'Upcoming' | 'Completed';
   assignAdmin: string;
+  avgTime: number;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -13,6 +14,7 @@ export interface ICampCreate {
   location: string;
   status: 'Ongoing' | 'Upcoming' | 'Completed';
   assignAdmin: string;
+  avgTime: number;
 }
 
 export interface ICampUpdate {
@@ -20,4 +22,5 @@ export interface ICampUpdate {
   location?: string;
   status: 'Ongoing' | 'Upcoming' | 'Completed';
   assignAdmin?: string;
+  avgTime: number;
 }
