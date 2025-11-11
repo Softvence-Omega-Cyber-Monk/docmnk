@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { PatientManagementService } from "./patientManagement.service";
-import { PatientRegistration } from "../patientRegistration/patientRegistration.model";
+import { getPatientModel } from "../patientRegistration/patientRegistration.model";
 import { PatientManagementModel } from "./patientManagement.model";
 import { CampModel } from "../eventManagements/eventManagement.model";
 
@@ -11,6 +11,8 @@ const createPatientManagement = async (req: Request, res: Response) => {
 
     // Check if record already exists
     const existing = await PatientManagementModel.findOne({ patientId });
+
+    const PatientRegistration = await getPatientModel();
     
 
     // Fetch patient from PatientRegistration
