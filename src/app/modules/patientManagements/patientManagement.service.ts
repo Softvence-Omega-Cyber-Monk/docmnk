@@ -1,13 +1,16 @@
 import { PatientManagementModel } from "./patientManagement.model";
 import { IpatientManagement } from "./patientManagement.interface";
 import { Parser } from "json2csv"; // ✅ add this import
-import { PatientRegistration } from "../patientRegistration/patientRegistration.model";
+import { getPatientModel } from "../patientRegistration/patientRegistration.model";
 import { CampModel } from "../eventManagements/eventManagement.model";
 
 // ✅ Create a patient management record
 const createPatientManagement = async (payload: IpatientManagement) => {
   const patient = await PatientManagementModel.create(payload);
   const camp = await CampModel.findById(payload.campId);
+
+  const PatientRegistration = await getPatientModel();
+
   if (payload.patientId) {
     await PatientRegistration.findByIdAndUpdate(
       payload.patientId,
@@ -89,6 +92,7 @@ const updatePatientManagement = async (
   if (!patient) {
     throw new Error("Patient not found");
   }
+  const PatientRegistration = await getPatientModel();
 
   if (patient.patientId) {
     await PatientRegistration.findByIdAndUpdate(
