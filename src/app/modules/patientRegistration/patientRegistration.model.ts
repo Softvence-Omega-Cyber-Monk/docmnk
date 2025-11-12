@@ -514,12 +514,14 @@ export const buildPatientSchema = async (): Promise<Schema<IPatientRegistrationM
   const schemaDefinition: Record<string, any> = {};
 
   allConfigs.forEach((section) => {
+    const sectionSchema: Record<string, any> = {};
     section.fields.forEach((field) => {
       schemaDefinition[field.fieldName] = {
         type: mapFieldType(field.fieldType),
         required: field.isRequired || false,
       };
     });
+    schemaDefinition[section.sectionName] = { type: new Schema(sectionSchema, { _id: false }) };
   });
   // Optional field
   schemaDefinition.campName = { type: String, required: false };
