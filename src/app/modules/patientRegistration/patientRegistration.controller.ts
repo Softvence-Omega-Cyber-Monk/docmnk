@@ -475,54 +475,234 @@
 //   updateClinicalAssessment,
 // };
 
+
+
+// import { Request, Response } from "express";
+// import { getPatientModel } from "./patientRegistration.model";
+// import { uploadImgToCloudinary } from "../../utils/cloudinary";
+// import { Configuration } from "../configurations/configuration.model";
+
+// // Utility to normalize fields (arrays → single value for non-file fields)
+// const normalizePatientData = (data: Record<string, any>, uploadedFiles: Record<string, string[]>) => {
+//   for (const key in data) {
+//     if (Array.isArray(data[key]) && !uploadedFiles[key]) {
+//       // Take first element if not a file field
+//       data[key] = data[key][0];
+//     }
+
+//     // Parse JSON strings if any
+//     if (typeof data[key] === "string") {
+//       try { data[key] = JSON.parse(data[key]); } catch {}
+//     }
+//   }
+//   return data;
+// };
+
+// // Create patient dynamically
+// export const createPatient = async (req: Request, res: Response) => {
+//   try {
+//     const PatientModel = await getPatientModel();
+//     const uploadedFiles: Record<string, string[]> = {};
+
+//     // Handle uploaded files
+//     if (req.files) {
+//       const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+//       for (const [fieldName, fileArray] of Object.entries(files)) {
+//         for (const file of fileArray) {
+//           const fileName = `${fieldName}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+//           const uploadResult = await uploadImgToCloudinary(fileName, file.path, "patients/reports");
+//           if (!uploadedFiles[fieldName]) uploadedFiles[fieldName] = [];
+//           uploadedFiles[fieldName].push(uploadResult.secure_url);
+//         }
+//       }
+//     }
+
+//     // Merge form data and uploaded files
+//     let patientData: Record<string, any> = { ...req.body, ...uploadedFiles };
+
+//     // Normalize arrays for non-file fields
+//     patientData = normalizePatientData(patientData, uploadedFiles);
+
+//     // Save patient
+//     const patient = await PatientModel.create(patientData);
+
+//     res.status(201).json({
+//       success: true,
+//       message: "Patient registered successfully",
+//       data: patient,
+//     });
+//   } catch (error: any) {
+//     res.status(400).json({ success: false, message: error.message || "Failed to create patient" });
+//   }
+// };
+
+// // Get all patients
+// export const getAllPatients = async (_req: Request, res: Response) => {
+//   try {
+//     const PatientModel = await getPatientModel();
+//     const patients = await PatientModel.find();
+//     res.status(200).json({ success: true, data: patients });
+//   } catch (error: any) {
+//     res.status(400).json({ success: false, message: error.message });
+//   }
+// };
+
+// // Get patient by ID
+// export const getPatientById = async (req: Request, res: Response) => {
+//   try {
+//     const { id } = req.params;
+//     const PatientModel = await getPatientModel();
+//     const patient = await PatientModel.findById(id);
+//     if (!patient) throw new Error("Patient not found");
+//     res.status(200).json({ success: true, data: patient });
+//   } catch (error: any) {
+//     res.status(404).json({ success: false, message: error.message });
+//   }
+// };
+
+// // Update patient dynamically
+// export const updatePatient = async (req: Request, res: Response) => {
+//   try {
+//     const { id } = req.params;
+//     const PatientModel = await getPatientModel();
+//     const uploadedFiles: Record<string, string[]> = {};
+
+//     // Handle uploaded files
+//     if (req.files) {
+//       const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+//       for (const [fieldName, fileArray] of Object.entries(files)) {
+//         for (const file of fileArray) {
+//           const fileName = `${fieldName}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+//           const uploadResult = await uploadImgToCloudinary(fileName, file.path, "patients/reports");
+//           if (!uploadedFiles[fieldName]) uploadedFiles[fieldName] = [];
+//           uploadedFiles[fieldName].push(uploadResult.secure_url);
+//         }
+//       }
+//     }
+
+//     // Merge form data and uploaded files
+//     let patientData: Record<string, any> = { ...req.body, ...uploadedFiles };
+
+//     // Normalize arrays for non-file fields
+//     patientData = normalizePatientData(patientData, uploadedFiles);
+
+//     // Update patient
+//     const patient = await PatientModel.findByIdAndUpdate(id, patientData, { new: true });
+//     if (!patient) throw new Error("Patient not found");
+
+//     res.status(200).json({ success: true, data: patient });
+//   } catch (error: any) {
+//     res.status(400).json({ success: false, message: error.message });
+//   }
+// };
+
+// // Delete patient
+// export const deletePatient = async (req: Request, res: Response) => {
+//   try {
+//     const { id } = req.params;
+//     const PatientModel = await getPatientModel();
+//     const patient = await PatientModel.findByIdAndDelete(id);
+//     if (!patient) throw new Error("Patient not found");
+//     res.status(200).json({ success: true, message: "Patient deleted successfully", data: patient });
+//   } catch (error: any) {
+//     res.status(400).json({ success: false, message: error.message });
+//   }
+// };
+
+
+
 import { Request, Response } from "express";
 import { getPatientModel } from "./patientRegistration.model";
 import { uploadImgToCloudinary } from "../../utils/cloudinary";
 import { Configuration } from "../configurations/configuration.model";
 
-// Utility to normalize fields (arrays → single value for non-file fields)
-const normalizePatientData = (data: Record<string, any>, uploadedFiles: Record<string, string[]>) => {
+/**
+ * 🧩 Utility — normalize non-file field data
+ * - Converts single-item arrays into values
+ * - Parses JSON strings safely
+ */
+const normalizePatientData = (
+  data: Record<string, any>,
+  uploadedFiles: Record<string, string[]>
+) => {
   for (const key in data) {
     if (Array.isArray(data[key]) && !uploadedFiles[key]) {
-      // Take first element if not a file field
-      data[key] = data[key][0];
+      data[key] = data[key][0]; // keep only the first element if not a file field
     }
 
-    // Parse JSON strings if any
     if (typeof data[key] === "string") {
-      try { data[key] = JSON.parse(data[key]); } catch {}
+      try {
+        data[key] = JSON.parse(data[key]);
+      } catch {
+        // ignore JSON parse errors
+      }
     }
   }
   return data;
 };
 
-// Create patient dynamically
+/**
+ * 🧠 Utility — group data by configuration section
+ */
+const organizePatientData = (
+  data: Record<string, any>,
+  uploadedFiles: Record<string, string[]>,
+  configs: any[]
+) => {
+  const organized: Record<string, any> = {};
+
+  configs.forEach((section) => {
+    organized[section.sectionName] = {};
+    section.fields.forEach((field: any) => {
+      const name = field.fieldName;
+      if (uploadedFiles[name]) {
+        organized[section.sectionName][name] = uploadedFiles[name];
+      } else if (data[name] !== undefined) {
+        organized[section.sectionName][name] = data[name];
+      }
+    });
+  });
+
+  // Add general fields not part of configurations
+  if (data.campName) organized.campName = data.campName;
+
+  return organized;
+};
+
+/**
+ * 🧾 Create patient
+ */
 export const createPatient = async (req: Request, res: Response) => {
   try {
     const PatientModel = await getPatientModel();
     const uploadedFiles: Record<string, string[]> = {};
+    const configs = await Configuration.find();
 
-    // Handle uploaded files
+    // 🖼️ Handle uploaded files
     if (req.files) {
       const files = req.files as { [fieldname: string]: Express.Multer.File[] };
       for (const [fieldName, fileArray] of Object.entries(files)) {
         for (const file of fileArray) {
-          const fileName = `${fieldName}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-          const uploadResult = await uploadImgToCloudinary(fileName, file.path, "patients/reports");
+          const fileName = `${fieldName}-${Date.now()}-${Math.random()
+            .toString(36)
+            .substring(2, 9)}`;
+          const uploadResult = await uploadImgToCloudinary(
+            fileName,
+            file.path,
+            "patients/reports"
+          );
           if (!uploadedFiles[fieldName]) uploadedFiles[fieldName] = [];
           uploadedFiles[fieldName].push(uploadResult.secure_url);
         }
       }
     }
 
-    // Merge form data and uploaded files
-    let patientData: Record<string, any> = { ...req.body, ...uploadedFiles };
+    // 🧩 Normalize and group data
+    let patientData = normalizePatientData(req.body, uploadedFiles);
+    const organizedData = organizePatientData(patientData, uploadedFiles, configs);
 
-    // Normalize arrays for non-file fields
-    patientData = normalizePatientData(patientData, uploadedFiles);
-
-    // Save patient
-    const patient = await PatientModel.create(patientData);
+    // 💾 Save
+    const patient = await PatientModel.create(organizedData);
 
     res.status(201).json({
       success: true,
@@ -530,22 +710,29 @@ export const createPatient = async (req: Request, res: Response) => {
       data: patient,
     });
   } catch (error: any) {
-    res.status(400).json({ success: false, message: error.message || "Failed to create patient" });
+    res.status(400).json({
+      success: false,
+      message: error.message || "Failed to create patient",
+    });
   }
 };
 
-// Get all patients
+/**
+ * 📋 Get all patients
+ */
 export const getAllPatients = async (_req: Request, res: Response) => {
   try {
     const PatientModel = await getPatientModel();
-    const patients = await PatientModel.find();
+    const patients = await PatientModel.find().sort({ createdAt: -1 });
     res.status(200).json({ success: true, data: patients });
   } catch (error: any) {
     res.status(400).json({ success: false, message: error.message });
   }
 };
 
-// Get patient by ID
+/**
+ * 🔍 Get patient by ID
+ */
 export const getPatientById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
@@ -558,51 +745,75 @@ export const getPatientById = async (req: Request, res: Response) => {
   }
 };
 
-// Update patient dynamically
+/**
+ * ✏️ Update patient
+ */
 export const updatePatient = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const PatientModel = await getPatientModel();
     const uploadedFiles: Record<string, string[]> = {};
+    const configs = await Configuration.find();
 
-    // Handle uploaded files
+    // 🖼️ Handle uploaded files
     if (req.files) {
       const files = req.files as { [fieldname: string]: Express.Multer.File[] };
       for (const [fieldName, fileArray] of Object.entries(files)) {
         for (const file of fileArray) {
-          const fileName = `${fieldName}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-          const uploadResult = await uploadImgToCloudinary(fileName, file.path, "patients/reports");
+          const fileName = `${fieldName}-${Date.now()}-${Math.random()
+            .toString(36)
+            .substring(2, 9)}`;
+          const uploadResult = await uploadImgToCloudinary(
+            fileName,
+            file.path,
+            "patients/reports"
+          );
           if (!uploadedFiles[fieldName]) uploadedFiles[fieldName] = [];
           uploadedFiles[fieldName].push(uploadResult.secure_url);
         }
       }
     }
 
-    // Merge form data and uploaded files
-    let patientData: Record<string, any> = { ...req.body, ...uploadedFiles };
+    // 🧩 Normalize and group updated data
+    let patientData = normalizePatientData(req.body, uploadedFiles);
+    const organizedData = organizePatientData(patientData, uploadedFiles, configs);
 
-    // Normalize arrays for non-file fields
-    patientData = normalizePatientData(patientData, uploadedFiles);
-
-    // Update patient
-    const patient = await PatientModel.findByIdAndUpdate(id, patientData, { new: true });
+    // 💾 Update
+    const patient = await PatientModel.findByIdAndUpdate(id, organizedData, { new: true });
     if (!patient) throw new Error("Patient not found");
 
-    res.status(200).json({ success: true, data: patient });
+    res.status(200).json({
+      success: true,
+      message: "Patient updated successfully",
+      data: patient,
+    });
   } catch (error: any) {
-    res.status(400).json({ success: false, message: error.message });
+    res.status(400).json({
+      success: false,
+      message: error.message || "Failed to update patient",
+    });
   }
 };
 
-// Delete patient
+/**
+ * 🗑️ Delete patient
+ */
 export const deletePatient = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const PatientModel = await getPatientModel();
     const patient = await PatientModel.findByIdAndDelete(id);
     if (!patient) throw new Error("Patient not found");
-    res.status(200).json({ success: true, message: "Patient deleted successfully", data: patient });
+
+    res.status(200).json({
+      success: true,
+      message: "Patient deleted successfully",
+      data: patient,
+    });
   } catch (error: any) {
-    res.status(400).json({ success: false, message: error.message });
+    res.status(400).json({
+      success: false,
+      message: error.message || "Failed to delete patient",
+    });
   }
 };

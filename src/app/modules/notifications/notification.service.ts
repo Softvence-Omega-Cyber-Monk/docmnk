@@ -2,7 +2,7 @@ import { NotificationModel } from "./notification.model";
 import { sendEmail } from "../../utils/sendEmail";
 import { sendWhatsApp } from "../../utils/sendWhatsApp";
 import { RecipientType } from "./notification.interface";
-import { PatientRegistration } from "../patientRegistration/patientRegistration.model"; // assuming you have a patient model
+import { getPatientModel } from "../patientRegistration/patientRegistration.model"; // assuming you have a patient model
 
 // 🟢 Create & optionally send notification
 const createNotification = async (data: any) => {
@@ -31,6 +31,7 @@ export const sendNotification = async (notificationData: any) => {
   console.log("Recipients type:", notificationData.recipients.type);
 
   try {
+    const PatientRegistration = await getPatientModel();
     // 🧠 Step 1: Determine recipients
     switch (notificationData.recipients.type) {
       case RecipientType.SPECIFIC_PATIENTS:
