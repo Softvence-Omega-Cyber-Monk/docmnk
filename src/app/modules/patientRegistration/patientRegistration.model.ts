@@ -487,14 +487,65 @@
 //   return mongoose.model<IPatientRegistrationModel>(modelName, schema);
 // };
 
+// import mongoose, { Schema, Document, Model } from "mongoose";
+// import { Configuration, IConfigurationModel } from "../configurations/configuration.model";
+
+// export interface IPatientRegistrationModel extends Document {
+//   [key: string]: any;
+// }
+
+// // Map field types
+// const mapFieldType = (fieldType: string) => {
+//   switch (fieldType) {
+//     case "number": return Number;
+//     case "date": return Date;
+//     case "file": return [String];
+//     case "checkbox": return Boolean;
+//     default: return String;
+//   }
+// };
+
+// // Build schema from all configuration sections
+// export const buildPatientSchema = async (): Promise<Schema<IPatientRegistrationModel>> => {
+//   const allConfigs: IConfigurationModel[] = await Configuration.find();
+
+//   if (!allConfigs || allConfigs.length === 0) throw new Error("No configuration found");
+
+//   const schemaDefinition: Record<string, any> = {};
+
+//   allConfigs.forEach((section) => {
+//     const sectionSchema: Record<string, any> = {};
+//     section.fields.forEach((field) => {
+//       schemaDefinition[field.fieldName] = {
+//         type: mapFieldType(field.fieldType),
+//         required: field.isRequired || false,
+//       };
+//     });
+//     schemaDefinition[section.sectionName] = { type: new Schema(sectionSchema, { _id: false }) };
+//   });
+//   // Optional field
+//   schemaDefinition.campName = { type: String, required: false };
+
+//   return new Schema(schemaDefinition, { timestamps: true });
+// };
+
+// // Get dynamic patient model
+// export const getPatientModel = async (): Promise<Model<IPatientRegistrationModel>> => {
+//   const modelName = "PatientRegistration";
+//   if (mongoose.models[modelName]) return mongoose.models[modelName] as Model<IPatientRegistrationModel>;
+
+//   const schema = await buildPatientSchema();
+//   return mongoose.model<IPatientRegistrationModel>(modelName, schema);
+// };
+
 import mongoose, { Schema, Document, Model } from "mongoose";
-import { Configuration, IConfigurationModel } from "../configurations/configuration.model";
+import { Configuration } from "../configurations/configuration.model";
 
 export interface IPatientRegistrationModel extends Document {
   [key: string]: any;
 }
 
-// Map field types
+// 🧠 Map field types from configuration → Mongoose schema types
 const mapFieldType = (fieldType: string) => {
   switch (fieldType) {
     case "number": return Number;
@@ -505,36 +556,39 @@ const mapFieldType = (fieldType: string) => {
   }
 };
 
-// Build schema from all configuration sections
-export const buildPatientSchema = async (): Promise<Schema<IPatientRegistrationModel>> => {
-  const allConfigs: IConfigurationModel[] = await Configuration.find();
+// 🧩 Build schema dynamically from Configuration collection
+const buildPatientSchema = async (): Promise<Schema> => {
+  const configurations = await Configuration.find();
+  const schemaFields: Record<string, any> = {};
 
-  if (!allConfigs || allConfigs.length === 0) throw new Error("No configuration found");
+  for (const config of configurations) {
+    const sectionName = config.sectionName;
+    const sectionFields: Record<string, any> = {};
 
-  const schemaDefinition: Record<string, any> = {};
-
-  allConfigs.forEach((section) => {
-    const sectionSchema: Record<string, any> = {};
-    section.fields.forEach((field) => {
-      schemaDefinition[field.fieldName] = {
+    for (const field of config.fields) {
+      sectionFields[field.fieldName] = {
         type: mapFieldType(field.fieldType),
         required: field.isRequired || false,
       };
-    });
-    schemaDefinition[section.sectionName] = { type: new Schema(sectionSchema, { _id: false }) };
-  });
-  // Optional field
-  schemaDefinition.campName = { type: String, required: false };
+    }
 
-  return new Schema(schemaDefinition, { timestamps: true });
+    schemaFields[sectionName] = sectionFields;
+  }
+
+  // Common global fields (not section-based)
+  schemaFields.campName = { type: String };
+  schemaFields.status = { type: String, default: "Pending" };
+
+  return new Schema(schemaFields, { timestamps: true });
 };
 
-// Get dynamic patient model
+// 🧠 Get dynamic patient model safely
 export const getPatientModel = async (): Promise<Model<IPatientRegistrationModel>> => {
   const modelName = "PatientRegistration";
-  if (mongoose.models[modelName]) return mongoose.models[modelName] as Model<IPatientRegistrationModel>;
+  if (mongoose.models[modelName]) {
+    return mongoose.models[modelName] as Model<IPatientRegistrationModel>;
+  }
 
   const schema = await buildPatientSchema();
   return mongoose.model<IPatientRegistrationModel>(modelName, schema);
 };
-
