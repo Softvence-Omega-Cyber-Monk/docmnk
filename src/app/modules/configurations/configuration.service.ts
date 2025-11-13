@@ -138,6 +138,14 @@ const deleteField = async (sectionName: string, fieldName: string): Promise<ICon
   return await config.save();
 };
 
+const deleteSectionByName = async (sectionName: string) => {
+  const deleteSection = await Configuration.findOneAndDelete({sectionName});
+  if(!deleteSection){
+    throw new Error("Section not found");
+  }
+  return deleteSection;
+}
+
 export const configurationService = {
   createOrUpdate,
   getAll,
@@ -145,4 +153,5 @@ export const configurationService = {
   addField,
   updateConfigurationField,
   deleteField,
+  deleteSectionByName,
 };

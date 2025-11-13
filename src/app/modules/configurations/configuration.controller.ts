@@ -145,11 +145,10 @@
 
 import { Request, Response } from "express";
 import { configurationService } from "./configuration.service";
+import { success } from "zod";
+import { Message } from "twilio/lib/twiml/MessagingResponse";
 
-const createOrUpdateConfiguration = async (
-  req: Request,
-  res: Response
-) => {
+const createOrUpdateConfiguration = async (req: Request, res: Response) => {
   try {
     const { sectionName, fields } = req.body;
     const data = await configurationService.createOrUpdate(sectionName, fields);
@@ -168,10 +167,7 @@ const getAllConfigurations = async (req: Request, res: Response) => {
   }
 };
 
-const getConfigurationBySection = async (
-  req: Request,
-  res: Response
-) => {
+const getConfigurationBySection = async (req: Request, res: Response) => {
   try {
     const { sectionName } = req.params;
     const data = await configurationService.getBySection(sectionName);
@@ -221,6 +217,23 @@ const deleteConfigurationField = async (req: Request, res: Response) => {
   }
 };
 
+const deleteByName = async (req: Request, res: Response) => {
+  try {
+    const { sectionName } = req.params;
+    const deleted = await configurationService.deleteSectionByName(sectionName);
+    res.status(200).json({
+      success: true,
+      message: "Section deleted successfully",
+      data: deleted,
+    });
+  } catch (error: any) {
+    res.status(404).json({
+      success: false,
+      message: error.message || "Failed to delete section",
+    });
+  }
+};
+
 export const configurationController = {
   createOrUpdateConfiguration,
   getAllConfigurations,
@@ -228,4 +241,5 @@ export const configurationController = {
   addFieldToConfiguration,
   updateConfigurationField,
   deleteConfigurationField,
+  deleteByName,
 };
