@@ -56,6 +56,7 @@ const createPatientManagement = async (payload: IpatientManagement) => {
     await CampModel.findByIdAndUpdate(payload.campId, {
       patientToday,
       completion: parseFloat(completion.toFixed(2)),
+      totalEnrolled: totalPatients,
     });
   }
   return patient;

@@ -19,5 +19,7 @@ router.get("/:sectionName", configurationController.getConfigurationBySection);
 router.post("/:sectionName/add-field", configurationController.addFieldToConfiguration);
 router.put("/update/:sectionName/field/:fieldName", configurationController.updateConfigurationField);
 router.delete("/:sectionName/:fieldName", configurationController.deleteConfigurationField);
+router.delete("/delete/by-name/:sectionName",configurationController.deleteByName);
+
 
 export const configurationRoutes = router;
