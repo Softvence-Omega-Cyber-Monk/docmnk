@@ -2,11 +2,12 @@ export interface ICamp {
   _id?: string;
   campName: string;
   location: string;
-  status: 'Ongoing' | 'Upcoming' | 'Completed';
+  status: "Ongoing" | "Upcoming" | "Completed";
   assignAdmin: string;
   avgTime: number;
-  patientToday?:number;
+  patientToday?: number;
   completion?: number;
+  totalEnrolled?: number;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -14,7 +15,7 @@ export interface ICamp {
 export interface ICampCreate {
   campName: string;
   location: string;
-  status: 'Ongoing' | 'Upcoming' | 'Completed';
+  status: "Ongoing" | "Upcoming" | "Completed";
   assignAdmin: string;
   avgTime: number;
 }
@@ -22,7 +23,7 @@ export interface ICampCreate {
 export interface ICampUpdate {
   campName?: string;
   location?: string;
-  status: 'Ongoing' | 'Upcoming' | 'Completed';
+  status: "Ongoing" | "Upcoming" | "Completed";
   assignAdmin?: string;
   avgTime: number;
 }
