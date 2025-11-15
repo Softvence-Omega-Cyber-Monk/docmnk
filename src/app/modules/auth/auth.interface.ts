@@ -6,6 +6,8 @@ export type TAccount = {
     accountStatus?: "ACTIVE" | "INACTIVE" | "SUSPENDED";
     role?: "USER" | "ADMIN" | "VOLUNTEER" | "CLINICIAN" | "SuperAdmin";
     isVerified?: boolean;
+    otp?: string | null;
+    otpExpiry?: Date | null;
 }
 
 
