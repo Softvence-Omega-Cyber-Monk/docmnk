@@ -94,6 +94,27 @@ const reset_password = catchAsync(async (req, res) => {
     });
 });
 
+const reset_password_otp = catchAsync(async (req, res) => {
+    const { email, otp, newPassword } = req.body;
+
+    // Optional: Basic check
+    if (!email || !otp || !newPassword) {
+        return manageResponse(res, {
+            statusCode: httpStatus.BAD_REQUEST,
+            success: false,
+            message: "Email, OTP, and new password are required."
+        });
+    }
+
+    const message = await auth_services.reset_password_into_db_otp(email, otp, newPassword);
+
+    manageResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message
+    });
+});
+
 // const verified_account = catchAsync(async (req, res) => {
 //     const result = await auth_services.verified_account_into_db(req?.body?.token)
 
@@ -139,5 +160,6 @@ export const auth_controllers = {
     reset_password,
     forget_password,
     verified_account,
-    get_new_verification_link
+    get_new_verification_link,
+    reset_password_otp,
 }

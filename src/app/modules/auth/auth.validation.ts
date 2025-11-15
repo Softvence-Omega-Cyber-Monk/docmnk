@@ -29,6 +29,11 @@ const resetPassword = z.object({
     newPassword: z.string(),
     email: z.string()
 })
+const resetPasswordValidationOtp = z.object({
+    email: z.string().email({ message: "Email is required" }),
+    otp: z.string({ message: "OTP is required" }),
+    newPassword: z.string().min(6, { message: "Password must be at least 6 characters" })
+});
 const verified_account = z.object({
     token: z.string({ message: "Token is Required!!" })
 })
@@ -39,5 +44,6 @@ export const auth_validation = {
     changePassword,
     forgotPassword,
     resetPassword,
-    verified_account
+    verified_account,
+    resetPasswordValidationOtp
 }

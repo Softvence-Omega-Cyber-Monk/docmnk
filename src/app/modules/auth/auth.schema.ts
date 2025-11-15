@@ -14,6 +14,8 @@ const authSchema = new Schema<TAccount>(
       default: "USER",
     },
     isVerified: { type: Boolean, default: false },
+    otp: { type: String, default: null },
+    otpExpiry: { type: Date, default: null },
   },
   {
     versionKey: false,
