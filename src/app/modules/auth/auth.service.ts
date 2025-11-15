@@ -223,49 +223,146 @@ const change_password_from_db = async (
 //   return "Check your email for reset link";
 // };
 
-const forget_password_from_db = async (email: string) => {
-  const isAccountExists = await isAccountExist(email);
+// const forget_password_from_db = async (email: string) => {
+//   const isAccountExists = await isAccountExist(email);
 
-  // 🔐 Generate 6-digit verification code
-  const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+//   // 🔐 Generate 6-digit verification code
+//   const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
-  // 🔐 Create JWT token that also contains the verification code
+//   // 🔐 Create JWT token that also contains the verification code
+//   const resetToken = jwtHelpers.generateToken(
+//     {
+//       email: isAccountExists.email,
+//       role: isAccountExists.role,
+//       code: verificationCode, // add code inside token
+//     },
+//     configs.jwt.reset_secret as Secret,
+//     configs.jwt.reset_expires as string
+//   );
+
+//   // 🔗 Create reset link
+//   const resetPasswordLink = `${configs.jwt.front_end_url}/reset?token=${resetToken}&email=${isAccountExists.email}`;
+
+//   // 📧 Email Template (both link + code)
+//   const emailTemplate = `
+//     <p>You requested to reset your password.</p>
+
+//     <p><b>Your verification code:</b> <h2>${verificationCode}</h2></p>
+
+//     <p>Or click the link below to reset your password:</p>
+//     <a href="${resetPasswordLink}">Reset Password</a>
+
+//     <p>This code will expire soon. If you didn't request this, please ignore.</p>
+//   `;
+
+//   await sendMail({
+//     to: email,
+//     subject: "Password Reset Request",
+//     textBody: `Your verification code is: ${verificationCode}`,
+//     htmlBody: emailTemplate,
+//   });
+
+//   return "Check your email for reset link and verification code";
+// };
+
+// const forget_password_from_db = async (email: string) => {
+//   const isAccountExists = await isAccountExist(email);
+
+//   if (!isAccountExists) {
+//     throw new AppError("Account not found", httpStatus.NOT_FOUND);
+//   }
+
+//   // Generate 6-digit OTP
+//   const verificationCode = Math.floor(
+//     100000 + Math.random() * 900000
+//   ).toString();
+
+//   // Save OTP inside database (so OTP verify works)
+//   await Account_Model.findOneAndUpdate(
+//     { email },
+//     { otp: verificationCode },
+//     { new: true }
+//   );
+
+//   // Create reset token
+//   const resetToken = jwtHelpers.generateToken(
+//     {
+//       email: isAccountExists.email,
+//       role: isAccountExists.role,
+//       code: verificationCode,
+//     },
+//     configs.jwt.reset_secret as Secret,
+//     configs.jwt.reset_expires as string
+//   );
+
+//   // Create link
+//   const resetPasswordLink = `${configs.jwt.front_end_url}/reset?token=${resetToken}&email=${email}`;
+
+//   // Email Template
+//   const emailTemplate = `
+//     <p>You requested to reset your password.</p>
+
+//     <p><b>Your Verification Code:</b></p>
+//     <h2 style="font-size: 28px; letter-spacing: 3px;">${verificationCode}</h2>
+
+//     <p>You can also reset using the link below:</p>
+//     <a href="${resetPasswordLink}" style="color: blue;">Reset Password</a>
+
+//     <p>This code expires in 10 minutes. If you didn't request this, ignore this email.</p>
+//   `;
+
+//   // Send email
+//   await sendMail({
+//     to: email,
+//     subject: "Password Reset Request",
+//     textBody: `Your OTP is ${verificationCode}. Reset Link: ${resetPasswordLink}`,
+//     htmlBody: emailTemplate,
+//   });
+
+//   return "Reset instructions sent: OTP + Reset link";
+// };
+
+
+const forget_password_from_db= async (email: string) => {
+  const account = await Account_Model.findOne({ email });
+  if (!account) throw new AppError("Account not found!", 404);
+
+  // 🔐 Generate 6-digit OTP
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+  // ⏱ Expiry 5 minutes
+  const otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
+
+  account.otp = otp;
+  account.otpExpiry = otpExpiry;
+  await account.save();
+
+  // 🔗 Optional: create reset link with JWT
   const resetToken = jwtHelpers.generateToken(
-    {
-      email: isAccountExists.email,
-      role: isAccountExists.role,
-      code: verificationCode, // add code inside token
-    },
+    { email: account.email, otp },
     configs.jwt.reset_secret as Secret,
     configs.jwt.reset_expires as string
   );
+  const resetLink = `${configs.jwt.front_end_url}/reset?token=${resetToken}&email=${account.email}`;
 
-  // 🔗 Create reset link
-  const resetPasswordLink = `${configs.jwt.front_end_url}/reset?token=${resetToken}&email=${isAccountExists.email}`;
-
-  // 📧 Email Template (both link + code)
+  // 📧 Send email
   const emailTemplate = `
     <p>You requested to reset your password.</p>
-
-    <p><b>Your verification code:</b> <h2>${verificationCode}</h2></p>
-
-    <p>Or click the link below to reset your password:</p>
-    <a href="${resetPasswordLink}">Reset Password</a>
-
-    <p>This code will expire soon. If you didn't request this, please ignore.</p>
+    <p><b>Your OTP:</b> <h2>${otp}</h2></p>
+    <p>Or click this link:</p>
+    <a href="${resetLink}">${resetLink}</a>
+    <p>This OTP will expire in 5 minutes.</p>
   `;
 
   await sendMail({
     to: email,
     subject: "Password Reset Request",
-    textBody: `Your verification code is: ${verificationCode}`,
+    textBody: `Your OTP is: ${otp}`,
     htmlBody: emailTemplate,
   });
 
-  return "Check your email for reset link and verification code";
+  return "Check your email for OTP and reset link.";
 };
-
-
 
 const reset_password_into_db = async (
   token: string,
@@ -296,6 +393,42 @@ const reset_password_into_db = async (
       lastPasswordChange: Date(),
     }
   );
+  return "Password reset successfully!";
+};
+
+const reset_password_into_db_otp = async (
+  email: string,
+  otp: string,
+  newPassword: string
+) => {
+  const account = await Account_Model.findOne({ email });
+  if (!account) throw new AppError("Account not found!", 404);
+
+  // Trim values
+  const dbOtp = account.otp?.trim();
+  
+  const inputOtp = otp.trim();
+
+
+  if (!dbOtp || dbOtp !== inputOtp) {
+    throw new AppError("Invalid OTP!", 400);
+  }
+
+  // Check expiry
+  if (!account.otpExpiry || Date.now() > account.otpExpiry.getTime()) {
+    throw new AppError("OTP expired!", 400);
+  }
+
+  // Hash new password
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+  // Update password and clear OTP
+  account.password = hashedPassword;
+  account.otp = undefined;
+  account.otpExpiry = undefined;
+  account.lastPasswordChange = new Date();
+  await account.save();
+
   return "Password reset successfully!";
 };
 
@@ -351,7 +484,10 @@ const verified_account_into_db = async (token: string, code?: string) => {
     // 🆚 If code is provided → verify OTP
     if (code) {
       if (savedCode !== code) {
-        throw new AppError("Invalid verification code!", httpStatus.BAD_REQUEST);
+        throw new AppError(
+          "Invalid verification code!",
+          httpStatus.BAD_REQUEST
+        );
       }
     }
 
@@ -363,12 +499,10 @@ const verified_account_into_db = async (token: string, code?: string) => {
     );
 
     return result;
-
   } catch (error) {
     throw new AppError("Invalid or expired token!", httpStatus.BAD_REQUEST);
   }
 };
-
 
 const get_new_verification_link_from_db = async (email: string) => {
   const isExistAccount = await isAccountExist(email);
@@ -415,4 +549,5 @@ export const auth_services = {
   reset_password_into_db,
   verified_account_into_db,
   get_new_verification_link_from_db,
+  reset_password_into_db_otp,
 };
