@@ -94,16 +94,31 @@ const reset_password = catchAsync(async (req, res) => {
     });
 });
 
-const verified_account = catchAsync(async (req, res) => {
-    const result = await auth_services.verified_account_into_db(req?.body?.token)
+// const verified_account = catchAsync(async (req, res) => {
+//     const result = await auth_services.verified_account_into_db(req?.body?.token)
 
-    manageResponse(res, {
-        statusCode: httpStatus.OK,
-        success: true,
-        message: "Account Verification successful.",
-        data: result
-    })
-})
+//     manageResponse(res, {
+//         statusCode: httpStatus.OK,
+//         success: true,
+//         message: "Account Verification successful.",
+//         data: result
+//     })
+// })
+
+const verified_account = catchAsync(async (req, res, next) => {
+  const { token, code } = req.body;
+
+  // Call service
+  const result = await auth_services.verified_account_into_db(token, code);
+
+  // Send response
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Account verification successful.",
+    data: result,
+  });
+});
 
 const get_new_verification_link = catchAsync(async (req, res) => {
     const result = await auth_services.get_new_verification_link_from_db(req?.body?.email)
