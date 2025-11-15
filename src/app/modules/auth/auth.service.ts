@@ -199,29 +199,73 @@ const change_password_from_db = async (
   return "Password changed successful.";
 };
 
+// const forget_password_from_db = async (email: string) => {
+//   const isAccountExists = await isAccountExist(email);
+//   const resetToken = jwtHelpers.generateToken(
+//     {
+//       email: isAccountExists.email,
+//       role: isAccountExists.role,
+//     },
+//     configs.jwt.reset_secret as Secret,
+//     configs.jwt.reset_expires as string
+//   );
+
+//   const resetPasswordLink = `${configs.jwt.front_end_url}/reset?token=${resetToken}&email=${isAccountExists.email}`;
+//   const emailTemplate = `<p>Click the link below to reset your password:</p><a href="${resetPasswordLink}">Reset Password</a>`;
+
+//   await sendMail({
+//     to: email,
+//     subject: "Password reset successful!",
+//     textBody: "Your password is successfully reset.",
+//     htmlBody: emailTemplate,
+//   });
+
+//   return "Check your email for reset link";
+// };
+
 const forget_password_from_db = async (email: string) => {
   const isAccountExists = await isAccountExist(email);
+
+  // 🔐 Generate 6-digit verification code
+  const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+  // 🔐 Create JWT token that also contains the verification code
   const resetToken = jwtHelpers.generateToken(
     {
       email: isAccountExists.email,
       role: isAccountExists.role,
+      code: verificationCode, // add code inside token
     },
     configs.jwt.reset_secret as Secret,
     configs.jwt.reset_expires as string
   );
 
+  // 🔗 Create reset link
   const resetPasswordLink = `${configs.jwt.front_end_url}/reset?token=${resetToken}&email=${isAccountExists.email}`;
-  const emailTemplate = `<p>Click the link below to reset your password:</p><a href="${resetPasswordLink}">Reset Password</a>`;
+
+  // 📧 Email Template (both link + code)
+  const emailTemplate = `
+    <p>You requested to reset your password.</p>
+
+    <p><b>Your verification code:</b> <h2>${verificationCode}</h2></p>
+
+    <p>Or click the link below to reset your password:</p>
+    <a href="${resetPasswordLink}">Reset Password</a>
+
+    <p>This code will expire soon. If you didn't request this, please ignore.</p>
+  `;
 
   await sendMail({
     to: email,
-    subject: "Password reset successful!",
-    textBody: "Your password is successfully reset.",
+    subject: "Password Reset Request",
+    textBody: `Your verification code is: ${verificationCode}`,
     htmlBody: emailTemplate,
   });
 
-  return "Check your email for reset link";
+  return "Check your email for reset link and verification code";
 };
+
+
 
 const reset_password_into_db = async (
   token: string,
@@ -255,21 +299,63 @@ const reset_password_into_db = async (
   return "Password reset successfully!";
 };
 
-const verified_account_into_db = async (token: string) => {
+// const verified_account_into_db = async (token: string) => {
+//   try {
+//     const { email } = jwtHelpers.verifyToken(
+//       token,
+//       configs.jwt.verified_token as string
+//     );
+//     // check account is already verified or blocked
+//     const isExistAccount = await Account_Model.findOne({ email });
+//     // check account
+//     if (!isExistAccount) {
+//       throw new AppError("Account not found!!", httpStatus.NOT_FOUND);
+//     }
+//     if (isExistAccount.isDeleted) {
+//       throw new AppError("Account deleted !!", httpStatus.BAD_REQUEST);
+//     }
+//     const result = await Account_Model.findOneAndUpdate(
+//       { email },
+//       { isVerified: true },
+//       { new: true }
+//     );
+
+//     return result;
+//   } catch (error) {
+//     throw new AppError("Invalid or Expired token!!!", httpStatus.BAD_REQUEST);
+//   }
+// };
+
+const verified_account_into_db = async (token: string, code?: string) => {
   try {
-    const { email } = jwtHelpers.verifyToken(
+    // 🔐 Decode token
+    const decoded: any = jwtHelpers.verifyToken(
       token,
       configs.jwt.verified_token as string
     );
-    // check account is already verified or blocked
-    const isExistAccount = await Account_Model.findOne({ email });
-    // check account
-    if (!isExistAccount) {
-      throw new AppError("Account not found!!", httpStatus.NOT_FOUND);
+
+    const email = decoded.email;
+    const savedCode = decoded.code; // OTP from email
+
+    // 🔎 Check if account exists
+    const account = await Account_Model.findOne({ email });
+
+    if (!account) {
+      throw new AppError("Account not found!", httpStatus.NOT_FOUND);
     }
-    if (isExistAccount.isDeleted) {
-      throw new AppError("Account deleted !!", httpStatus.BAD_REQUEST);
+
+    if (account.isDeleted) {
+      throw new AppError("Account deleted!", httpStatus.BAD_REQUEST);
     }
+
+    // 🆚 If code is provided → verify OTP
+    if (code) {
+      if (savedCode !== code) {
+        throw new AppError("Invalid verification code!", httpStatus.BAD_REQUEST);
+      }
+    }
+
+    // ✔ Mark user as verified
     const result = await Account_Model.findOneAndUpdate(
       { email },
       { isVerified: true },
@@ -277,10 +363,12 @@ const verified_account_into_db = async (token: string) => {
     );
 
     return result;
+
   } catch (error) {
-    throw new AppError("Invalid or Expired token!!!", httpStatus.BAD_REQUEST);
+    throw new AppError("Invalid or expired token!", httpStatus.BAD_REQUEST);
   }
 };
+
 
 const get_new_verification_link_from_db = async (email: string) => {
   const isExistAccount = await isAccountExist(email);
