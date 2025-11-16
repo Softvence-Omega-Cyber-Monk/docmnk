@@ -615,6 +615,7 @@ import { Request, Response } from "express";
 import { getPatientModel } from "./patientRegistration.model";
 import { uploadImgToCloudinary } from "../../utils/cloudinary";
 import { Configuration } from "../configurations/configuration.model";
+import { getAllReportsService, getReportByPatientId, saveFullReport } from "./patientRegistration.service";
 
 /**
  * 🧩 Utility — normalize non-file field data
@@ -817,3 +818,98 @@ export const deletePatient = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const storeGeneratedReport = async (req: Request, res: Response) => {
+  try {
+    const reportData = req.body;    // your full JSON object
+    const patientId = reportData.patient_id;
+
+    if (!patientId) {
+      return res.status(400).json({ message: "patient_id is required" });
+    }
+
+    const saved = await saveFullReport(patientId, reportData);
+
+    return res.status(200).json({
+      success: true,
+      message: "Report saved successfully",
+      data: saved
+    });
+
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to save report",
+      error: error.message
+    });
+  }
+};
+
+export const getAllReports = async (req: Request, res: Response) => {
+  try {
+    const reports = await getAllReportsService();
+
+    res.status(200).json({
+      success: true,
+      message: "Reports fetched successfully",
+      data: reports
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch reports",
+      error: error.message
+    });
+  }
+};
+
+export const fetchReport = async (req: Request, res: Response) => {
+  try {
+    const { patientId } = req.params;
+
+    const Patient = await getPatientModel();
+    const patient = await Patient.findById(patientId);
+
+    if (!patient) {
+      return res.status(404).json({ success: false, message: "Patient not found" });
+    }
+
+    // ---------------------------------------
+    // ⭐ Automatically find name in ANY section
+    // ---------------------------------------
+    let fullName: string | null = null;
+
+    const nameKeys = ["name", "fullName", "FullName", "Full Name", "patient_name"];
+
+    for (const section of Object.keys(patient.toObject())) {
+      const sectionData = patient[section];
+
+      if (typeof sectionData === "object" && sectionData !== null) {
+        for (const key of Object.keys(sectionData)) {
+          if (nameKeys.includes(key)) {
+            fullName = sectionData[key];
+            break;
+          }
+        }
+      }
+
+      if (fullName) break;
+    }
+
+    return res.status(200).json({
+      success: true,
+      fullName: fullName || null,   // ⭐ return name
+      report: patient.report,
+      reportStatus: patient.reportStatus,
+      reportGeneratedAt: patient.reportGeneratedAt
+    });
+
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch report",
+      error: error.message
+    });
+  }
+};
+

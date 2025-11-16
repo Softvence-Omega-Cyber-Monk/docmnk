@@ -90,11 +90,35 @@ const dynamicMulterMiddleware = async (req: any, res: any, next: any) => {
 };
 
 // Routes
+// router.post("/create", dynamicMulterMiddleware, patientController.createPatient);
+// router.get("/getAll", patientController.getAllPatients);
+// router.get("/:id", patientController.getPatientById);
+// router.put("/:id", dynamicMulterMiddleware, patientController.updatePatient);
+// router.delete("/:id", patientController.deletePatient);
+// router.post("/save-report",patientController.storeGeneratedReport);
+// router.get("/reports",patientController.getAllReports);
+// router.get("/get-report/:patientId", patientController.fetchReport);
+
+// 1️⃣ Create patient
 router.post("/create", dynamicMulterMiddleware, patientController.createPatient);
+
+// 2️⃣ Save generated report
+router.post("/save-report", patientController.storeGeneratedReport);
+
+// 3️⃣ Get all reports
+router.get("/reports", patientController.getAllReports);
+
+// 4️⃣ Get single report by patient ID
+router.get("/get-report/:patientId", patientController.fetchReport);
+
+// 5️⃣ Get all patients
 router.get("/getAll", patientController.getAllPatients);
+
+// 6️⃣ Patient CRUD operations (must come after static routes)
 router.get("/:id", patientController.getPatientById);
 router.put("/:id", dynamicMulterMiddleware, patientController.updatePatient);
 router.delete("/:id", patientController.deletePatient);
+
 
 export const PatientRegistrationRoutes = router;
 
