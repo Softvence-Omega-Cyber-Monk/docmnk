@@ -1,14 +1,14 @@
 // import { Schema, model, Document } from "mongoose";
-// import { 
-//   IPatientRegistration, 
-//   IMedicalCondition, 
-//   IMedicalHistory, 
-//   ISmokingHistory, 
-//   ITobaccoChewing, 
-//   IBetelNutUse, 
-//   IAlcoholUse, 
-//   ISubstanceUse, 
-//   ILifestyleAndSubstanceUse, 
+// import {
+//   IPatientRegistration,
+//   IMedicalCondition,
+//   IMedicalHistory,
+//   ISmokingHistory,
+//   ITobaccoChewing,
+//   IBetelNutUse,
+//   IAlcoholUse,
+//   ISubstanceUse,
+//   ILifestyleAndSubstanceUse,
 //   IDietaryActivityAssessment,
 //   IClinicalAssessment,
 //   IVitalsBiometrics,
@@ -167,7 +167,7 @@
 //       type: String,
 //       enum: ["Sedentary", "Lightly Active", "Moderately Active", "Very Active", "Extremely Active"]
 //     },
-//     sleepHoursPerNight: { 
+//     sleepHoursPerNight: {
 //       type: Number,
 //       min: 0,
 //       max: 24
@@ -434,7 +434,6 @@
 
 // edit code dynamic
 
-
 // import mongoose, { Schema, Document, Model } from "mongoose";
 // import { Configuration } from "../configurations/configuration.model";
 // import { IPatientRegistration } from "./patientRegistration.interface";
@@ -548,11 +547,16 @@ export interface IPatientRegistrationModel extends Document {
 // 🧠 Map field types from configuration → Mongoose schema types
 const mapFieldType = (fieldType: string) => {
   switch (fieldType) {
-    case "number": return Number;
-    case "date": return Date;
-    case "file": return [String];
-    case "checkbox": return Boolean;
-    default: return String;
+    case "number":
+      return Number;
+    case "date":
+      return Date;
+    case "file":
+      return [String];
+    case "checkbox":
+      return Boolean;
+    default:
+      return String;
   }
 };
 
@@ -579,11 +583,17 @@ const buildPatientSchema = async (): Promise<Schema> => {
   schemaFields.campName = { type: String };
   schemaFields.status = { type: String, default: "Pending" };
 
+  schemaFields.report = { type: Schema.Types.Mixed };
+  schemaFields.reportGeneratedAt = { type: Date };
+  schemaFields.reportStatus = { type: String, default: "Not Generated" };
+
   return new Schema(schemaFields, { timestamps: true });
 };
 
 // 🧠 Get dynamic patient model safely
-export const getPatientModel = async (): Promise<Model<IPatientRegistrationModel>> => {
+export const getPatientModel = async (): Promise<
+  Model<IPatientRegistrationModel>
+> => {
   const modelName = "PatientRegistration";
   if (mongoose.models[modelName]) {
     return mongoose.models[modelName] as Model<IPatientRegistrationModel>;

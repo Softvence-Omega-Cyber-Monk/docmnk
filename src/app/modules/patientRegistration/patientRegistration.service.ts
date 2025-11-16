@@ -123,3 +123,71 @@ export const deletePatient = async (id: string) => {
   if (!patient) throw new Error("Patient not found");
   return patient;
 };
+
+export const saveFullReport = async (patientId: string, report: any) => {
+  const Patient = await getPatientModel();
+
+  const updated = await Patient.findByIdAndUpdate(
+    patientId,
+    {
+      report: report,                    // store full report JSON
+      reportGeneratedAt: new Date(),     // timestamp
+      reportStatus: "Generated"
+    },
+    { new: true }
+  );
+
+  return updated;
+};
+
+export const getReportByPatientId = async (patientId: string) => {
+  const Patient = await getPatientModel();
+
+  const patient = await Patient.findById(patientId).select("report reportStatus reportGeneratedAt");
+
+  return patient;
+};
+
+// List of possible dynamic name keys
+const nameKeys = ["name", "fullName", "FullName", "Full Name", "patient_name"];
+
+export const getAllReportsService = async () => {
+  const Patient = await getPatientModel();
+
+  // Fetch all patients that have a report
+  const patientsWithReports = await Patient.find({ report: { $exists: true, $ne: null } })
+    .sort({ reportGeneratedAt: -1 });
+
+  // Map each patient to include a unified patientName
+  const formattedReports = patientsWithReports.map((patient: any) => {
+    const patientObj = patient.toObject();
+
+    let patientName: string | null = null;
+
+    // Loop through all sections to find a field that matches nameKeys
+    for (const section of Object.keys(patientObj)) {
+      const sectionData = patientObj[section];
+
+      if (typeof sectionData === "object" && sectionData !== null) {
+        for (const key of Object.keys(sectionData)) {
+          if (nameKeys.includes(key)) {
+            patientName = sectionData[key];
+            break;
+          }
+        }
+      }
+
+      if (patientName) break;
+    }
+
+    return {
+      _id: patientObj._id,
+      patientName: patientName || null,
+      report: patientObj.report,
+      reportStatus: patientObj.reportStatus,
+      reportGeneratedAt: patientObj.reportGeneratedAt
+    };
+  });
+
+  return formattedReports;
+};
