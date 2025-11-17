@@ -151,6 +151,17 @@ const get_new_verification_link = catchAsync(async (req, res) => {
     })
 })
 
+const delete_account = catchAsync(async (req, res) => {
+  const result = await auth_services.delete_account_from_db(req.body.email);
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Account deleted successfully.",
+    data: result,
+  });
+});
+
 export const auth_controllers = {
     register_user,
     login_user,
@@ -162,4 +173,5 @@ export const auth_controllers = {
     verified_account,
     get_new_verification_link,
     reset_password_otp,
+    delete_account,
 }

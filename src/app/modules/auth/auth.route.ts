@@ -58,4 +58,9 @@ authRoute.post(
   RequestValidator(auth_validation.forgotPassword),
   auth_controllers.get_new_verification_link
 );
+
+authRoute.delete(
+  "/delete-account",
+  auth_controllers.delete_account
+);
 export default authRoute;
