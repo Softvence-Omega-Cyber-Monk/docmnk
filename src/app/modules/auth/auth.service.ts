@@ -439,6 +439,21 @@ const get_new_verification_link_from_db = async (email: string) => {
 
   return null;
 };
+const delete_account_from_db = async (email: string) => {
+  const isExistAccount = await isAccountExist(email);
+  if (!isExistAccount) {
+    throw new AppError("Account not found!", httpStatus.NOT_FOUND);
+  }
+
+  // ❌ Permanently delete account
+  await Account_Model.findOneAndDelete({ email });
+
+  // ❌ Permanently delete user profile
+  await User_Model.findOneAndDelete({ accountId: isExistAccount._id });
+
+  return "Account deleted successfully!";
+};
+
 
 export const auth_services = {
   register_user_into_db,
@@ -451,4 +466,5 @@ export const auth_services = {
   verified_account_into_db,
   get_new_verification_link_from_db,
   reset_password_into_db_otp,
+  delete_account_from_db,
 };
