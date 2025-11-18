@@ -116,7 +116,7 @@ router.get("/getAll", patientController.getAllPatients);
 
 // 6️⃣ Patient CRUD operations (must come after static routes)
 router.get("/:id", patientController.getPatientById);
-router.put("/:id", dynamicMulterMiddleware, patientController.updatePatient);
+// router.put("/updatePatient/:id", dynamicMulterMiddleware, patientController.updatePatient);
 router.delete("/:id", patientController.deletePatient);
 
 
