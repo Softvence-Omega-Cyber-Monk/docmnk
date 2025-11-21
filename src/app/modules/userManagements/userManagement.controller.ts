@@ -1,17 +1,61 @@
 // userManagement.controller.ts
 import { Request, Response } from "express";
 import { UserManagementService } from "./userManagement.service";
+import { uploadImgToCloudinary } from "../../utils/cloudinary";
 
 // 🟢 Create new user
+// const createUserManagement = async (req: Request, res: Response) => {
+//   try {
+//     const result = await UserManagementService.createUserManagement(req.body);
+//     res.status(201).json({
+//       success: true,
+//       message: "User created successfully",
+//       data: result,
+//     });
+//   } catch (error: any) {
+//     res.status(500).json({
+//       success: false,
+//       message: error.message || "Failed to create user",
+//     });
+//   }
+// };
+
 const createUserManagement = async (req: Request, res: Response) => {
   try {
-    const result = await UserManagementService.createUserManagement(req.body);
+    let imageUrl = "";
+
+    // If file uploaded
+    if (req.file) {
+      const originalName = req.file.originalname.split(".")[0];
+      const cloudFile = await uploadImgToCloudinary(
+        originalName,
+        req.file.path,
+        "user-management"
+      );
+
+      imageUrl = cloudFile.secure_url;
+    }
+
+    const payload = {
+      ...req.body,
+      companyInfo: {
+        ...JSON.parse(req.body.companyInfo),
+        imageUrl,
+      },
+      referrerInfo: req.body.referrerInfo
+        ? JSON.parse(req.body.referrerInfo)
+        : undefined,
+    };
+
+    const result = await UserManagementService.createUserManagement(payload);
+
     res.status(201).json({
       success: true,
       message: "User created successfully",
       data: result,
     });
   } catch (error: any) {
+    console.log(error);
     res.status(500).json({
       success: false,
       message: error.message || "Failed to create user",

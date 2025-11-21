@@ -3,6 +3,7 @@ export interface ICompanyInformation {
   role: string;
   email: string;
   phoneNumber: string;
+  imageUrl?: string; // Optional field
   password: string;
   isReferred: boolean;
 }
