@@ -1,18 +1,44 @@
 import { configs } from "../../configs";
 import catchAsync from "../../utils/catch_async";
+import { uploadImgToCloudinary } from "../../utils/cloudinary";
 import manageResponse from "../../utils/manage_response";
 import { auth_services } from "./auth.service";
 import httpStatus from 'http-status';
 
+// const register_user = catchAsync(async (req, res) => {
+//     const result = await auth_services.register_user_into_db(req?.body)
+//     manageResponse(res, {
+//         success: true,
+//         message: "Account created successful",
+//         statusCode: httpStatus.OK,
+//         data: result
+//     })
+// })
+
 const register_user = catchAsync(async (req, res) => {
-    const result = await auth_services.register_user_into_db(req?.body)
-    manageResponse(res, {
-        success: true,
-        message: "Account created successful",
-        statusCode: httpStatus.OK,
-        data: result
-    })
-})
+  const payload = req.body;
+
+  // If image included
+  if (req.file) {
+    const imageName = `user-${Date.now()}`;
+    const uploaded = await uploadImgToCloudinary(
+      imageName,
+      req.file.path,
+      "users"
+    );
+
+    payload.image = uploaded.secure_url;
+  }
+
+  const result = await auth_services.register_user_into_db(payload);
+
+  manageResponse(res, {
+    success: true,
+    message: "Account created successfully",
+    statusCode: httpStatus.OK,
+    data: result,
+  });
+});
 
 const login_user = catchAsync(async (req, res) => {
     const result = await auth_services.login_user_from_db(req.body);
