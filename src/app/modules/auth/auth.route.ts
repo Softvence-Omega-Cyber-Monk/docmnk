@@ -4,11 +4,12 @@ import RequestValidator from "../../middlewares/request_validator";
 import { auth_validation } from "./auth.validation";
 import auth from "../../middlewares/auth";
 import { auth_services } from "./auth.service";
+import { uploadSingle } from "../../utils/cloudinary";
 
 const authRoute = Router();
 
 authRoute.post(
-  "/register",
+  "/register",uploadSingle,
   RequestValidator(auth_validation.register_validation),
   auth_controllers.register_user
 );
