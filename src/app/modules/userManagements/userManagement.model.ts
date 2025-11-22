@@ -32,8 +32,8 @@ const UserManagementSchema = new Schema<IUserManagementDocument>(
   {
     companyInfo: { type: CompanyInformationSchema, required: true },
     referrerInfo: { type: ReferrerInformationSchema },
-    status: { type: String, enum: ["active", "inactive", "pending"], default: "active" },
-    verificationStatus: { type: String, enum: ["verified", "unverified", "pending"], default: "verified" },
+    status: { type: String, enum: ["active", "inactive", "pending"], default: "pending", required: true },
+    verificationStatus: { type: String, enum: ["verified", "unverified", "pending"], default: "pending", required: true },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
   },
