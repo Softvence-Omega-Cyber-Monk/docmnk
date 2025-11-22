@@ -1,7 +1,9 @@
 export type TAccount = {
+    name: string;
     email: string;
     password: string;
     lastPasswordChange?: Date;
+    image?: string;
     isDeleted?: boolean;
     accountStatus?: "ACTIVE" | "INACTIVE" | "SUSPENDED";
     role?: "USER" | "ADMIN" | "VOLUNTEER" | "CLINICIAN" | "SuperAdmin";
@@ -12,7 +14,7 @@ export type TAccount = {
 
 
 export interface TRegisterPayload extends TAccount {
-    name?: string;
+    
 }
 
 export type TLoginPayload = {

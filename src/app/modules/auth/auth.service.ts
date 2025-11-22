@@ -13,6 +13,8 @@ import sendMail from "../../utils/mail_sender";
 import { isAccountExist } from "../../utils/isAccountExist";
 // register user
 const register_user_into_db = async (payload: TRegisterPayload) => {
+
+  // console.log("Payload in Service:", payload);
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
@@ -31,9 +33,11 @@ const register_user_into_db = async (payload: TRegisterPayload) => {
 
     // Create account
     const accountPayload: TAccount = {
+      name: payload.name,
       email: payload.email,
       password: hashPassword,
       lastPasswordChange: new Date(),
+      image: payload?.image,
     };
     const newAccount = await Account_Model.create([accountPayload], {
       session,
@@ -44,6 +48,7 @@ const register_user_into_db = async (payload: TRegisterPayload) => {
       name: payload?.name,
       accountId: newAccount[0]._id,
       email: payload?.email,
+      image: payload?.image,
     };
     await User_Model.create([userPayload], { session });
     // make verified link
@@ -88,6 +93,8 @@ const register_user_into_db = async (payload: TRegisterPayload) => {
     session.endSession();
   }
 };
+
+
 
 // login user
 const login_user_from_db = async (payload: TLoginPayload) => {

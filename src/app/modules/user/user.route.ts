@@ -8,7 +8,7 @@ const userRoute = Router()
 
 userRoute.patch(
     "/update-profile",
-    auth("ADMIN","USER", "VOLUNTEER", "CLINICIAN"),
+    // auth("ADMIN","USER", "VOLUNTEER", "CLINICIAN"),
     uploader.single("image"),
     (req: Request, res: Response, next: NextFunction) => {
         req.body = user_validations.update_user.parse(JSON.parse(req?.body?.data))
@@ -18,7 +18,7 @@ userRoute.patch(
 
 // userRoute.post("/create", user_controllers.createUser);
 // userRoute.get("/get-all", user_controllers.getAllUsers);
-// userRoute.get("/get-single/:userId", user_controllers.getUserById);
+userRoute.get("/get-single/:userId", user_controllers.getUserById);
 
 
 export default userRoute;
