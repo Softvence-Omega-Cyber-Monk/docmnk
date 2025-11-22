@@ -85,7 +85,7 @@ const register_user_into_db = async (payload: TRegisterPayload) => {
     });
     return newAccount;
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     // Rollback the transaction
     await session.abortTransaction();
     throw error;
