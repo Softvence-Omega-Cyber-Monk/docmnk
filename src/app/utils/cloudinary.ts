@@ -10,7 +10,7 @@ import { configs } from "../configs";
 export const deleteFile = async (filePath: string) => {
   try {
     await fs.unlink(filePath);
-    console.log(`File deleted successfully: ${filePath}`);
+    // console.log(`File deleted successfully: ${filePath}`);
   } catch (err: any) {
     console.error(`Error deleting file: ${err.message}`);
   }
@@ -69,7 +69,7 @@ export const uploadImgToCloudinary = async (
       timeout: 60000,
     });
 
-    console.log("✅ File uploaded to Cloudinary:", uploadResult.public_id);
+    // console.log("✅ File uploaded to Cloudinary:", uploadResult.public_id);
 
     // Generate signed URL if it’s a PDF (private file)
     let secureUrl = uploadResult.secure_url;

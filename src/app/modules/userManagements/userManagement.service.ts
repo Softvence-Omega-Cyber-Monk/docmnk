@@ -5,9 +5,10 @@ import { IUserManagement } from "./userManagement.interface";
 import { TAccount } from "../auth/auth.interface";
 import { User_Model } from "../user/user.schema";
 import { TUser } from "../user/user.interface";
-import bcrypt from "bcrypt"
+import bcrypt from "bcrypt";
+import { uploadImgToCloudinary } from "../../utils/cloudinary";
 
-export const createUserManagement = async (data: IUserManagement) => {
+const createUserManagement = async (data: IUserManagement) => {
   // 🔐 Hash password before saving
   const hashedPassword = await bcrypt.hash(data.companyInfo.password, 10);
 
@@ -36,6 +37,7 @@ export const createUserManagement = async (data: IUserManagement) => {
   } else {
     // Create new Auth account
     const newAccount = await Account_Model.create({
+      name: data.companyInfo.clientName,
       email: data.companyInfo.email,
       password: hashedPassword,
       role: data.companyInfo.role as TAccount["role"],

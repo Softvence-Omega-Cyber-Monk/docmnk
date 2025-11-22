@@ -4,21 +4,6 @@ import { UserManagementService } from "./userManagement.service";
 import { uploadImgToCloudinary } from "../../utils/cloudinary";
 
 // 🟢 Create new user
-// const createUserManagement = async (req: Request, res: Response) => {
-//   try {
-//     const result = await UserManagementService.createUserManagement(req.body);
-//     res.status(201).json({
-//       success: true,
-//       message: "User created successfully",
-//       data: result,
-//     });
-//   } catch (error: any) {
-//     res.status(500).json({
-//       success: false,
-//       message: error.message || "Failed to create user",
-//     });
-//   }
-// };
 
 const createUserManagement = async (req: Request, res: Response) => {
   try {
@@ -55,13 +40,14 @@ const createUserManagement = async (req: Request, res: Response) => {
       data: result,
     });
   } catch (error: any) {
-    console.log(error);
+    // console.log(error);
     res.status(500).json({
       success: false,
       message: error.message || "Failed to create user",
     });
   }
 };
+
 
 // 🟡 Get all users
 const getAllUserManagement = async (req: Request, res: Response) => {
