@@ -43,6 +43,7 @@ const register_user_into_db = async (payload: TRegisterPayload) => {
     const userPayload: TUser = {
       name: payload?.name,
       accountId: newAccount[0]._id,
+      email: payload?.email,
     };
     await User_Model.create([userPayload], { session });
     // make verified link
