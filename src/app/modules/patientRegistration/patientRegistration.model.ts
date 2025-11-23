@@ -591,12 +591,25 @@ const buildPatientSchema = async (): Promise<Schema> => {
 };
 
 // 🧠 Get dynamic patient model safely
+// export const getPatientModel = async (): Promise<
+//   Model<IPatientRegistrationModel>
+// > => {
+//   const modelName = "PatientRegistration";
+//   if (mongoose.models[modelName]) {
+//     return mongoose.models[modelName] as Model<IPatientRegistrationModel>;
+//   }
+
+//   const schema = await buildPatientSchema();
+//   return mongoose.model<IPatientRegistrationModel>(modelName, schema);
+// };
 export const getPatientModel = async (): Promise<
   Model<IPatientRegistrationModel>
 > => {
   const modelName = "PatientRegistration";
+
+  // ❗ Always delete old model to regenerate dynamic schema
   if (mongoose.models[modelName]) {
-    return mongoose.models[modelName] as Model<IPatientRegistrationModel>;
+    delete mongoose.models[modelName];
   }
 
   const schema = await buildPatientSchema();
