@@ -199,7 +199,6 @@
 //   deleteNotification,
 // };
 
-
 import { NotificationModel } from "./notification.model";
 import { sendEmail } from "../../utils/sendEmail";
 import { RecipientType, NotificationStatus } from "./notification.interface";
