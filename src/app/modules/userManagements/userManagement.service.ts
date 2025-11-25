@@ -1,7 +1,7 @@
 // userManagement.service.ts
 import { UserManagementModel } from "./userManagement.model";
 import { Account_Model } from "../auth/auth.schema";
-import { IUserManagement } from "./userManagement.interface";
+import { ICompanyInformation, IUserManagement } from "./userManagement.interface";
 import { TAccount } from "../auth/auth.interface";
 import { User_Model } from "../user/user.schema";
 import { TUser } from "../user/user.interface";
@@ -67,20 +67,123 @@ const getSingleUser = async (id: string) => {
   return await UserManagementModel.findById(id);
 };
 
-// 🔵 Update user (and sync with Auth)
-const updateUserManagement = async (
+// // 🔵 Update user (and sync with Auth)
+// const updateUserManagement = async (
+//   id: string,
+//   updateData: Partial<IUserManagement>
+// ) => {
+//   const user = await UserManagementModel.findByIdAndUpdate(id, updateData, {
+//     new: true,
+//   });
+//   if (!user) throw new Error("User not found");
+
+//   const auth = await Account_Model.findOne({ email: user.companyInfo.email });
+//   if (auth) {
+//     if (updateData.companyInfo?.role) {
+//       auth.role = updateData.companyInfo.role as TAccount["role"];
+//     }
+
+//     if (updateData.status) {
+//       const statusMap: Record<string, TAccount["accountStatus"]> = {
+//         active: "ACTIVE",
+//         inactive: "INACTIVE",
+//         pending: "INACTIVE",
+//       };
+//       auth.accountStatus = statusMap[updateData.status];
+//     }
+
+//     if (updateData.verificationStatus) {
+//       auth.isVerified = updateData.verificationStatus === "verified";
+//     }
+
+//     await auth.save();
+//   }
+
+//   return user;
+// };
+
+// 🔵 Update user (with Form-Data + Image Upload)
+
+export const updateUserManagement = async (
   id: string,
-  updateData: Partial<IUserManagement>
+  updateData: Partial<IUserManagement>,
+  file?: Express.Multer.File
 ) => {
-  const user = await UserManagementModel.findByIdAndUpdate(id, updateData, {
-    new: true,
-  });
+  const user = await UserManagementModel.findById(id);
   if (!user) throw new Error("User not found");
 
-  const auth = await Account_Model.findOne({ email: user.companyInfo.email });
+  const updatePayload: Record<string, any> = {};
+
+  // ----------------------------
+  // 🔹 1. Upload Image
+  // ----------------------------
+  if (file) {
+    const uploadResult = await uploadImgToCloudinary(
+      `user-${id}-${Date.now()}`,
+      file.path,
+      "userManagement"
+    );
+
+    updatePayload["companyInfo.imageUrl"] = uploadResult.secure_url;
+  }
+
+  // ----------------------------
+  // 🔹 2. Handle Password
+  // ----------------------------
+  if (updateData.companyInfo?.password) {
+    const hashedPassword = await bcrypt.hash(
+      updateData.companyInfo.password,
+      10
+    );
+    updatePayload["companyInfo.password"] = hashedPassword;
+  }
+
+  // ----------------------------
+  // 🔹 3. Update other fields safely
+  // ----------------------------
+  if (updateData.companyInfo) {
+    type CompanyKeys = keyof ICompanyInformation;
+
+    (Object.keys(updateData.companyInfo) as CompanyKeys[]).forEach((key) => {
+      if (key !== "password") {
+        updatePayload[`companyInfo.${key}`] =
+          updateData.companyInfo?.[key] ?? undefined;
+      }
+    });
+  }
+
+  // ----------------------------
+  // 🔹 4. Update main fields
+  // ----------------------------
+  if (updateData.status) updatePayload.status = updateData.status;
+  if (updateData.verificationStatus)
+    updatePayload.verificationStatus = updateData.verificationStatus;
+
+  // ----------------------------
+  // 🔵 5. Apply Update
+  // ----------------------------
+  const updatedUser = await UserManagementModel.findByIdAndUpdate(
+    id,
+    { $set: updatePayload },
+    { new: true }
+  );
+
+  if (!updatedUser) throw new Error("User update failed");
+
+  // ----------------------------
+  // 🔹 6. Sync with Auth model
+  // ----------------------------
+  const auth = await Account_Model.findOne({
+    email: updatedUser.companyInfo.email,
+  });
+
   if (auth) {
     if (updateData.companyInfo?.role) {
       auth.role = updateData.companyInfo.role as TAccount["role"];
+    }
+
+    if (updateData.companyInfo?.password) {
+      auth.password = updatePayload["companyInfo.password"];
     }
 
     if (updateData.status) {
@@ -99,8 +202,9 @@ const updateUserManagement = async (
     await auth.save();
   }
 
-  return user;
+  return updatedUser;
 };
+
 
 // 🔴 Delete user
 const deleteUserManagement = async (id: string) => {
