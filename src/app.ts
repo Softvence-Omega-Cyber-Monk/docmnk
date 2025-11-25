@@ -1,38 +1,47 @@
-import express, { Request, Response } from 'express'
-import cors from 'cors';
-import globalErrorHandler from './app/middlewares/global_error_handler'
-import notFound from './app/middlewares/not_found_api'
-import cookieParser from 'cookie-parser'
-import appRouter from './routes'
-import { Account_Model } from './app/modules/auth/auth.schema';
-import bcrypt from 'bcrypt';
-import { configs } from './app/configs';
-import { User_Model } from './app/modules/user/user.schema';
+import express, { Request, Response } from "express";
+import cors from "cors";
+import globalErrorHandler from "./app/middlewares/global_error_handler";
+import notFound from "./app/middlewares/not_found_api";
+import cookieParser from "cookie-parser";
+import appRouter from "./routes";
+import { Account_Model } from "./app/modules/auth/auth.schema";
+import bcrypt from "bcrypt";
+import { configs } from "./app/configs";
+import { User_Model } from "./app/modules/user/user.schema";
 
 // define app
-const app = express()
+const app = express();
 // Important: parse JSON bodies
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // middleware
-app.use(cors({
-    origin: ["http://localhost:3000","http://localhost:5173","http://localhost:5174", "https://dockmnk.netlify.app"],
+// app.use(cors({
+//     origin: ["http://localhost:3000","http://localhost:5173","http://localhost:5174", "https://dockmnk.netlify.app","*"],
+//     credentials: true,
+// }))
+
+app.use(
+  cors({
+    origin: "*",
+    methods: "GET,POST,PUT,DELETE,PATCH",
     credentials: true,
-}))
-app.use(express.json({ limit: "100mb" }))
-app.use(express.raw())
-app.use(cookieParser())
+  })
+);
+
+app.use(express.json({ limit: "100mb" }));
+app.use(express.raw());
+app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
-app.use("/api/v1", appRouter)
+app.use("/api/v1", appRouter);
 
 // stating point
-app.get('/', (req: Request, res: Response) => {
-    res.status(200).json({
-        status: 'success',
-        message: 'Server is running successful !!',
-        data: null,
-    });
+app.get("/", (req: Request, res: Response) => {
+  res.status(200).json({
+    status: "success",
+    message: "Server is running successful !!",
+    data: null,
+  });
 });
 
 // Create Default SuperAdmin if not exists
@@ -62,7 +71,7 @@ export const createDefaultSuperAdmin = async () => {
         name: "docmnk SuperAdmin", // Use the same name from account
         accountId: newAccount._id, // Use the created account's ID
       };
-      
+
       await User_Model.create(userPayload);
       console.log("✅ Default Admin created.");
     } else {
