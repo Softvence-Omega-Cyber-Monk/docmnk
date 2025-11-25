@@ -19,31 +19,79 @@ export interface IConfigurationModel extends IConfiguration, Document {}
 //   },
 //   { _id: false }
 // );
+
+
+// const FieldSchema = new Schema<IField>(
+//   {
+//     fieldName: { type: String, required: true },
+//     fieldType: {
+//       type: String,
+//       enum: ["text", "number", "date", "select", "checkbox", "radio", "textarea", "file"],
+//       required: true,
+//     },
+//     isRequired: { type: Boolean, default: false },
+//     placeholder: { type: String },
+
+//     // For select/radio/checkbox dynamic options
+//     options: {
+//       type: [{ label: String, value: String }],
+//       default: [],
+//       validate: {
+//         validator: function (v: any[]) {
+//           // Only validate when type is select
+//           if (this.fieldType === "select") {
+//             return v && v.length > 0;
+//           }
+//           return true;
+//         },
+//         message: "Options are required when fieldType is 'select'.",
+//       },
+//     },
+
+//     order: { type: Number, default: 0 },
+//     active: { type: Boolean, default: true },
+//   },
+//   { _id: false }
+// );
+
+
 const FieldSchema = new Schema<IField>(
   {
     fieldName: { type: String, required: true },
+
     fieldType: {
       type: String,
-      enum: ["text", "number", "date", "select", "checkbox", "radio", "textarea", "file"],
+      enum: [
+        "text",
+        "number",
+        "date",
+        "select",
+        "checkbox",
+        "radio",
+        "textarea",
+        "file",
+      ],
       required: true,
     },
+
     isRequired: { type: Boolean, default: false },
     placeholder: { type: String },
 
-    // For select/radio/checkbox dynamic options
+    // This becomes nested FIELD under checkbox
     options: {
-      type: [{ label: String, value: String }],
+      type: [ 
+        {
+          fieldName: { type: String, required: true },
+          fieldType: {
+            type: String,
+            enum: ["text", "number", "date", "textarea", "file"],
+            required: true,
+          },
+          placeholder: { type: String },
+          isRequired: { type: Boolean, default: false }
+        }
+      ],
       default: [],
-      validate: {
-        validator: function (v: any[]) {
-          // Only validate when type is select
-          if (this.fieldType === "select") {
-            return v && v.length > 0;
-          }
-          return true;
-        },
-        message: "Options are required when fieldType is 'select'.",
-      },
     },
 
     order: { type: Number, default: 0 },
