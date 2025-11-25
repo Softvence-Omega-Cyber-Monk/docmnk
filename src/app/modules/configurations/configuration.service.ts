@@ -89,15 +89,26 @@
 import { Configuration, IConfigurationModel } from "./configuration.model";
 import { IField } from "./configuration.interface";
 
+// const createOrUpdate = async (sectionName: string, fields: IField[]): Promise<IConfigurationModel[]> => {
+//   await Configuration.findOneAndUpdate(
+//     { sectionName },
+//     { $set: { fields } },
+//     { new: true, upsert: true }
+//   );
+
+//   return await Configuration.find();
+// };
+
 const createOrUpdate = async (sectionName: string, fields: IField[]): Promise<IConfigurationModel[]> => {
   await Configuration.findOneAndUpdate(
     { sectionName },
-    { $set: { fields } },
+    { $push: { fields: { $each: fields } } },  // <-- Adds new fields
     { new: true, upsert: true }
   );
 
   return await Configuration.find();
 };
+
 
 const getAll = async (): Promise<IConfigurationModel[]> => {
   return await Configuration.find();
