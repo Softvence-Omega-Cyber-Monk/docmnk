@@ -55,6 +55,52 @@ export interface IConfigurationModel extends IConfiguration, Document {}
 // );
 
 
+// const FieldSchema = new Schema<IField>(
+//   {
+//     fieldName: { type: String, required: true },
+
+//     fieldType: {
+//       type: String,
+//       enum: [
+//         "text",
+//         "number",
+//         "date",
+//         "select",
+//         "checkbox",
+//         "radio",
+//         "textarea",
+//         "file",
+//       ],
+//       required: true,
+//     },
+
+//     isRequired: { type: Boolean, default: false },
+//     placeholder: { type: String },
+
+//     // This becomes nested FIELD under checkbox
+//     options: {
+//       type: [ 
+//         {
+//           fieldName: { type: String, required: true },
+//           fieldType: {
+//             type: String,
+//             enum: ["text", "number", "date", "textarea", "file"],
+//             required: true,
+//           },
+//           placeholder: { type: String },
+//           isRequired: { type: Boolean, default: false }
+//         }
+//       ],
+//       default: [],
+//     },
+
+//     order: { type: Number, default: 0 },
+//     active: { type: Boolean, default: true },
+//   },
+//   { _id: false }
+// );
+
+
 const FieldSchema = new Schema<IField>(
   {
     fieldName: { type: String, required: true },
@@ -77,21 +123,31 @@ const FieldSchema = new Schema<IField>(
     isRequired: { type: Boolean, default: false },
     placeholder: { type: String },
 
-    // This becomes nested FIELD under checkbox
+    // OPTIONS LOGIC
     options: {
-      type: [ 
-        {
-          fieldName: { type: String, required: true },
-          fieldType: {
-            type: String,
-            enum: ["text", "number", "date", "textarea", "file"],
-            required: true,
-          },
-          placeholder: { type: String },
-          isRequired: { type: Boolean, default: false }
-        }
-      ],
+      type: Array,
       default: [],
+      validate: {
+        validator: function (v: any[]) {
+          if (this.fieldType === "select" || this.fieldType === "radio") {
+            return v.every(opt => opt.label && opt.value);
+          }
+
+          if (this.fieldType === "checkbox") {
+            return v.every(
+              c =>
+                c.fieldName &&
+                c.fieldType &&
+                ["text", "number", "date", "textarea", "file"].includes(
+                  c.fieldType
+                )
+            );
+          }
+
+          return true;
+        },
+        message: "Invalid options format.",
+      },
     },
 
     order: { type: Number, default: 0 },
@@ -99,6 +155,7 @@ const FieldSchema = new Schema<IField>(
   },
   { _id: false }
 );
+
 
 
 const ConfigurationSchema = new Schema<IConfigurationModel>(
