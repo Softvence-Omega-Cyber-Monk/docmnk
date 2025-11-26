@@ -23,6 +23,7 @@ app.use(
       "http://localhost:5173",
       "http://localhost:5174",
       "https://dockmnk.netlify.app",
+      "https://medixcamp.com",
       "*",
     ],
     credentials: true,
