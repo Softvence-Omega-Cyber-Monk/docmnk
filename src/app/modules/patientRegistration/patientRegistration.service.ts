@@ -17,11 +17,16 @@ export const getPatientById = async (id: string) => {
   return await PatientModel.findById(id);
 };
 
-export const updatePatient = async (id: string, payload: any) => {
+// export const updatePatient = async (id: string, payload: any) => {
+//   const PatientModel = await getPatientModel();
+//   const patient = await PatientModel.findByIdAndUpdate(id, payload, { new: true });
+//   if (!patient) throw new Error("Patient not found");
+//   return patient;
+// };
+
+export const updatePatientRegistration = async (id: string, payload: any) => {
   const PatientModel = await getPatientModel();
-  const patient = await PatientModel.findByIdAndUpdate(id, payload, { new: true });
-  if (!patient) throw new Error("Patient not found");
-  return patient;
+  return await PatientModel.findByIdAndUpdate(id, payload, { new: true });
 };
 
 export const deletePatient = async (id: string) => {
