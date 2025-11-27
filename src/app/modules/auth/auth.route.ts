@@ -54,6 +54,7 @@ authRoute.post(
   RequestValidator(auth_validation.verified_account),
   auth_controllers.verified_account
 );
+authRoute.post("/verify-otp", auth_controllers.verifyOTP);
 authRoute.post(
   "/new-verification-link",
   RequestValidator(auth_validation.forgotPassword),
