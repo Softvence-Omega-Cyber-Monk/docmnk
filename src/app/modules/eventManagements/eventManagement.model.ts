@@ -49,6 +49,7 @@ const campSchema = new Schema<ICamp>(
     patientToday: { type: Number },
     completion: { type: Number },
     totalEnrolled: { type: Number },
+    totalScreened: { type: Number },
   },
   {
     versionKey: false,
