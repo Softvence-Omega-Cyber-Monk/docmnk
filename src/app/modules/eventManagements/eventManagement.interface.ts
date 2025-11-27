@@ -10,6 +10,7 @@ export interface ICamp {
   patientToday?: number;
   completion?: number;
   totalEnrolled?: number;
+  totalScreened?: number;
   createdAt?: Date;
   updatedAt?: Date;
 }
