@@ -2,8 +2,10 @@ export interface ICamp {
   _id?: string;
   campName: string;
   location: string;
-  status: "Ongoing" | "Upcoming" | "Completed";
+  status?: "Ongoing" | "Upcoming" | "Completed";
   assignAdmin: string;
+  startDate?: Date;
+  endDate?: Date;
   avgTime: number;
   patientToday?: number;
   completion?: number;

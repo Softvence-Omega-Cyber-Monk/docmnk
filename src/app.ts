@@ -9,11 +9,14 @@ import bcrypt from "bcrypt";
 import { configs } from "./app/configs";
 import { User_Model } from "./app/modules/user/user.schema";
 
+// Cron job for auto-updating camp status
+import "./app/modules/eventManagements/autoStatusUpdate";
+
 // define app
 const app = express();
 // Important: parse JSON bodies
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// app.use(express.json());
+// app.use(express.urlencoded({ extended: true }));
 
 // middleware
 app.use(
