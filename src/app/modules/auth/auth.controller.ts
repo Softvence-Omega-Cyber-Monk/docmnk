@@ -188,6 +188,18 @@ const delete_account = catchAsync(async (req, res) => {
   });
 });
 
+const verifyOTP = catchAsync(async (req, res) => {
+  const { email, otp } = req.body;
+  const result = await auth_services.verify_otp_service(email, otp);
+
+  manageResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "OTP verification successful",
+    data: result,
+  });
+});
+
 export const auth_controllers = {
     register_user,
     login_user,
@@ -200,4 +212,5 @@ export const auth_controllers = {
     get_new_verification_link,
     reset_password_otp,
     delete_account,
+    verifyOTP,
 }

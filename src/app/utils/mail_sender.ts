@@ -73,7 +73,7 @@ const sendMail = async (payload: TMailContent) => {
                         alt="">
                
                 <p style="font-size: 12px;">The Support Team</p>
-                <h3>docmnk</h3>
+                <h3>medixcamp</h3>
             </div>
         </div>
         <p style="font-size: 14px; color: #999999; margin-top: 20px; margin-bottom: 10px; text-align: center;">

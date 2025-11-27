@@ -10,6 +10,7 @@ export type TAccount = {
     isVerified?: boolean;
     otp?: string | null;
     otpExpiry?: Date | null;
+    otpExpiresAt?: Date | null;
 }
 
 
