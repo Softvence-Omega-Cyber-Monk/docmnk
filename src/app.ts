@@ -66,12 +66,13 @@ export const createDefaultSuperAdmin = async () => {
     const hashedPassword = await bcrypt.hash(
       "Mohit@334", // Default password for Admin
       Number(configs.bcrypt.salt_rounds) // Ensure bcrypt_salt_rounds is correctly pulled from config
-    );
+    ); 
 
     if (!existingAdmin) {
       const newAccount = await Account_Model.create({
-        name: "SuperAdmin",
+        name: "Mohit Naren",
         email: "mohit.naren@gmail.com",
+        image: "https://res.cloudinary.com/dsi00lpgf/image/upload/v1764309074/photo_2025-11-28_10-31-09_oc9a3d.jpg",
         password: hashedPassword,
         confirmPassword: hashedPassword,
         role: "SuperAdmin",
