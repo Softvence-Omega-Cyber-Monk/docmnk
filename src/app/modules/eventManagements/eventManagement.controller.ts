@@ -51,10 +51,37 @@ const deleteCamp = async (req: Request, res: Response) => {
   }
 };
 
+const getNearbyCampsController = async (req: Request, res: Response) => {
+  try {
+    const { latitude, longitude, maxDistance } = req.query;
+
+    if (!latitude || !longitude) {
+      return res.status(400).json({ success: false, message: "Latitude and longitude are required" });
+    }
+
+    const camps = await EventManagementService.findNearbyCamps(
+      parseFloat(latitude as string),
+      parseFloat(longitude as string),
+      maxDistance ? parseInt(maxDistance as string) : 5000
+    );
+
+    res.status(200).json({
+      success: true,
+      data: camps,
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 export const EventManagementController = {
   createCamp,
   getAllCamps,
   getSingleCamp,
   updateCamp,
   deleteCamp,
+  getNearbyCampsController,
 };

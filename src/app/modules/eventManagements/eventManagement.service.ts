@@ -68,10 +68,24 @@ const deleteCamp = async (id: string): Promise<{ message: string }> => {
   return { message: "Camp deleted successfully" };
 };
 
+const findNearbyCamps = async (latitude: number, longitude: number, maxDistance = 5000) => {
+  const nearbyCamps = await CampModel.find({
+    locationCoords: {
+      $near: {
+        $geometry: { type: "Point", coordinates: [longitude, latitude] },
+        $maxDistance: maxDistance, // in meters
+      },
+    },
+  });
+
+  return nearbyCamps;
+};
+
 export const EventManagementService = {
   createCamp,
   getAllCamps,
   getSingleCamp,
   updateCamp,
   deleteCamp,
+  findNearbyCamps,
 };
