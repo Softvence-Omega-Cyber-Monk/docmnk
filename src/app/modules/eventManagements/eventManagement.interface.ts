@@ -6,7 +6,7 @@ export interface ILocationCoords {
 export interface ICamp {
   _id?: string;
   campName: string;
-  location: string;
+  location?: string;
   status?: "Ongoing" | "Upcoming" | "Completed";
   assignAdmin: string;
   startDate?: Date;
