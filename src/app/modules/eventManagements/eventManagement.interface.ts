@@ -1,3 +1,8 @@
+export interface ILocationCoords {
+  type: "Point";
+  coordinates: [number, number]; // [longitude, latitude]
+}
+
 export interface ICamp {
   _id?: string;
   campName: string;
@@ -11,6 +16,7 @@ export interface ICamp {
   completion?: number;
   totalEnrolled?: number;
   totalScreened?: number;
+  locationCoords?: ILocationCoords;
   createdAt?: Date;
   updatedAt?: Date;
 }

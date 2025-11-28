@@ -37,6 +37,18 @@ const campSchema = new Schema<ICamp>(
   {
     campName: { type: String, required: true },
     location: { type: String, required: true },
+    // ⭐ Add this
+    locationCoords: {
+      type: {
+        type: String,
+        enum: ["Point"],
+        default: "Point",
+      },
+      coordinates: {
+        type: [Number], // [longitude, latitude]
+        required: false,
+      },
+    },
     status: {
       type: String,
       enum: ["Ongoing", "Upcoming", "Completed"],
@@ -60,5 +72,8 @@ const campSchema = new Schema<ICamp>(
 // Middleware usage
 campSchema.pre("save", updateCampStatusOnSave);
 campSchema.pre(["findOneAndUpdate", "updateOne"], updateCampStatusOnUpdate);
+
+// ✅ Create 2dsphere index for geospatial queries
+campSchema.index({ locationCoords: "2dsphere" });
 
 export const CampModel = model("camps", campSchema);
