@@ -1,13 +1,56 @@
 import { Request, Response } from "express";
 import { EventManagementService } from "./eventManagement.service";
+import { reverseGeocode } from "../../utils/reverseGeocode";
+import { CampModel } from "./eventManagement.model";
 
 // Create a new camp
+// const createCamp = async (req: Request, res: Response) => {
+//   try {
+//     const camp = await EventManagementService.createCamp(req.body);
+//     res.status(201).json(camp);
+//   } catch (error: any) {
+//     res.status(500).json({ message: error.message || "Error creating camp" });
+//   }
+// };
+
 const createCamp = async (req: Request, res: Response) => {
   try {
-    const camp = await EventManagementService.createCamp(req.body);
-    res.status(201).json(camp);
-  } catch (error: any) {
-    res.status(500).json({ message: error.message || "Error creating camp" });
+    const {
+      campName,
+      locationCoords,
+      assignAdmin,
+      startDate,
+      endDate,
+      avgTime
+    } = req.body;
+
+    // Extract coords
+    const [longitude, latitude] = locationCoords.coordinates;
+
+    // Auto-generate readable location
+    const location = await reverseGeocode(longitude, latitude);
+
+    // Save to DB
+    const newCamp = await CampModel.create({
+      campName,
+      location,
+      assignAdmin,
+      startDate,
+      endDate,
+      avgTime,
+      locationCoords
+    });
+
+    res.status(201).json({
+      success: true,
+      data: newCamp
+    });
+  } catch (error) {
+    console.error("Create Camp Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while creating camp"
+    });
   }
 };
 
