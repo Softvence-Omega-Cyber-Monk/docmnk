@@ -69,7 +69,7 @@ const sendMail = async (payload: TMailContent) => {
                 style=" margin-top: 60px; text-align: center;">
                 
                     <img style="width: 50px; height: 50px; border-radius: 50%;"
-                        src="https://imgs.search.brave.com/IZoN38NQxnIIuB1I9E70bW6q5OvbEtz68YaxTe1j-o0/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9lbGVt/ZW50cy1yZXNpemVk/LmVudmF0b3VzZXJj/b250ZW50LmNvbS9l/bGVtZW50cy1jb3Zl/ci1pbWFnZXMvMjhi/NmVjMTQtMGMwOS00/NGY1LWE5NGUtNmIy/OTM5NTZkMDM2P3c9/NDMzJmNmX2ZpdD1z/Y2FsZS1kb3duJnE9/ODUmZm9ybWF0PWF1/dG8mcz04Mjc0OWYy/ZDUyMmJiM2NlMjNi/OWNhNjhlZmFhNjdk/MTg5OGI4NWIwNzBh/MjQ1NjM4NmI1ZmFj/NWVmNmM5ZTNl"
+                        src="https://i.postimg.cc/SQ9rGkw1/logo.jpg"
                         alt="">
                
                 <p style="font-size: 12px;">The Support Team</p>

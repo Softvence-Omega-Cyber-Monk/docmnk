@@ -12,94 +12,12 @@ import { JwtPayload, Secret } from "jsonwebtoken";
 import sendMail from "../../utils/mail_sender";
 import { isAccountExist } from "../../utils/isAccountExist";
 // register user
-// const register_user_into_db = async (payload: TRegisterPayload) => {
-
-//   // console.log("Payload in Service:", payload);
-//   const session = await mongoose.startSession();
-//   session.startTransaction();
-//   try {
-//     // Check if the account already exists
-//     const isExistAccount = await Account_Model.findOne(
-//       { email: payload?.email },
-//       null,
-//       { session }
-//     );
-//     if (isExistAccount) {
-//       throw new AppError("Account already exist!!", httpStatus.BAD_REQUEST);
-//     }
-
-//     // Hash the password
-//     const hashPassword = bcrypt.hashSync(payload?.password, 10);
-
-//     // Create account
-//     const accountPayload: TAccount = {
-//       name: payload.name,
-//       email: payload.email,
-//       password: hashPassword,
-//       lastPasswordChange: new Date(),
-//       image: payload?.image,
-//     };
-//     const newAccount = await Account_Model.create([accountPayload], {
-//       session,
-//     });
-
-//     // Create user
-//     const userPayload: TUser = {
-//       name: payload?.name,
-//       accountId: newAccount[0]._id,
-//       email: payload?.email,
-//       image: payload?.image,
-//     };
-//     await User_Model.create([userPayload], { session });
-//     // make verified link
-//     const verifiedToken = jwtHelpers.generateToken(
-//       {
-//         email: payload?.email,
-//       },
-//       configs.jwt.verified_token as Secret,
-//       "5m"
-//     );
-//     const verificationLink = `${configs.jwt.front_end_url}/verified?token=${verifiedToken}`;
-//     // Commit the transaction
-//     await session.commitTransaction();
-//     await sendMail({
-//       to: payload?.email,
-//       subject: "Thanks for creating account!",
-//       textBody: `New Account successfully created on ${new Date().toLocaleDateString()}`,
-//       name: payload?.name,
-//       htmlBody: `
-//             <p>Thanks for creating an account with us. We’re excited to have you on board! Click the button below to
-//                 verify your email and activate your account:</p>
-
-
-//             <div style="text-align: center; margin: 30px 0;">
-//                 <a href="${verificationLink}" target="_blank"
-//                     style="background-color: #4CAF50; color: #ffffff; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 5px; display: inline-block; font-size: 18px;"
-//                     class="btn">
-//                     Verify My Email
-//                 </a>
-//             </div>
-
-//             <p>If you did not create this account, please ignore this email.</p>
-//             `,
-//     });
-//     return newAccount;
-//   } catch (error) {
-//     // console.log(error);
-//     // Rollback the transaction
-//     await session.abortTransaction();
-//     throw error;
-//   } finally {
-//     session.endSession();
-//   }
-// };
-
 const register_user_into_db = async (payload: TRegisterPayload) => {
+  // console.log("Payload in Service:", payload);
   const session = await mongoose.startSession();
   session.startTransaction();
-
   try {
-    // Check account exists
+    // Check if the account already exists
     const isExistAccount = await Account_Model.findOne(
       { email: payload?.email },
       null,
@@ -109,7 +27,7 @@ const register_user_into_db = async (payload: TRegisterPayload) => {
       throw new AppError("Account already exist!!", httpStatus.BAD_REQUEST);
     }
 
-    // Hash password
+    // Hash the password
     const hashPassword = bcrypt.hashSync(payload?.password, 10);
 
     // ➤ Generate OTP
@@ -125,7 +43,6 @@ const register_user_into_db = async (payload: TRegisterPayload) => {
       image: payload?.image,
       otp,
       otpExpiresAt,
-      isVerified: false,
     };
     const newAccount = await Account_Model.create([accountPayload], {
       session,
@@ -139,48 +56,144 @@ const register_user_into_db = async (payload: TRegisterPayload) => {
       image: payload?.image,
     };
     await User_Model.create([userPayload], { session });
-
-    // Email verified link
+    // make verified link
     const verifiedToken = jwtHelpers.generateToken(
-      { email: payload?.email },
+      {
+        email: payload?.email,
+      },
       configs.jwt.verified_token as Secret,
       "5m"
     );
     const verificationLink = `${configs.jwt.front_end_url}/verified?token=${verifiedToken}`;
-
-    // Commit transaction
+    // Commit the transaction
     await session.commitTransaction();
-
-    // Send email with OTP + link
     await sendMail({
       to: payload?.email,
-      subject: "Verify Your Account",
+      subject: "Thanks for creating account!",
+      textBody: `New Account successfully created on ${new Date().toLocaleDateString()}`,
       name: payload?.name,
-      textBody: `Your OTP is ${otp} and expires in 10 minutes.`,
       htmlBody: `
-        <p>Welcome ${payload?.name},</p>
-        <p>Your verification OTP is:</p>
-        <h2 style="text-align:center;">${otp}</h2>
-        <p>This OTP will expire in <b>10 minutes</b>.</p>
+            <p>Thanks for creating an account with us. We’re excited to have you on board! Click the button below to
+                verify your email and activate your account:</p>
 
-        <p>Or verify using this link:</p>
-        <div style="text-align: center; margin: 25px 0;">
-            <a href="${verificationLink}" target="_blank"
-                style="background-color:#4CAF50; color:#fff; padding:12px 22px; border-radius:6px; text-decoration:none;">
-                Verify Email
-            </a>
-        </div>
-      `,
+
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="${verificationLink}" target="_blank"
+                    style="background-color: #4CAF50; color: #ffffff; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 5px; display: inline-block; font-size: 18px;"
+                    class="btn">
+                    Verify My Email
+                </a>
+            </div>
+
+            <div>
+                <p>If you are APP user this time user OTP</p>
+                <p>Your verification OTP is:</p>
+                <h2 style="text-align:center;">${otp}</h2>
+                <p>This OTP will expire in <b>10 minutes</b>.</p>
+            </div>
+            
+
+            <p>If you did not create this account, please ignore this email.</p>
+            `,
     });
-
-    return newAccount[0];
+    return newAccount;
   } catch (error) {
+    // console.log(error);
+    // Rollback the transaction
     await session.abortTransaction();
     throw error;
   } finally {
     session.endSession();
   }
 };
+
+// const register_user_into_db_otp = async (payload: TRegisterPayload) => {
+//   const session = await mongoose.startSession();
+//   session.startTransaction();
+
+//   try {
+//     // Check account exists
+//     const isExistAccount = await Account_Model.findOne(
+//       { email: payload?.email },
+//       null,
+//       { session }
+//     );
+//     if (isExistAccount) {
+//       throw new AppError("Account already exist!!", httpStatus.BAD_REQUEST);
+//     }
+
+//     // Hash password
+//     const hashPassword = bcrypt.hashSync(payload?.password, 10);
+
+//     // ➤ Generate OTP
+//     const otp = Math.floor(100000 + Math.random() * 900000).toString();
+//     const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 min
+
+//     // Create account
+//     const accountPayload: TAccount = {
+//       name: payload.name,
+//       email: payload.email,
+//       password: hashPassword,
+//       lastPasswordChange: new Date(),
+//       image: payload?.image,
+//       otp,
+//       otpExpiresAt,
+//       isVerified: false,
+//     };
+//     const newAccount = await Account_Model.create([accountPayload], {
+//       session,
+//     });
+
+//     // Create user
+//     const userPayload: TUser = {
+//       name: payload?.name,
+//       accountId: newAccount[0]._id,
+//       email: payload?.email,
+//       image: payload?.image,
+//     };
+//     await User_Model.create([userPayload], { session });
+
+//     // Email verified link
+//     const verifiedToken = jwtHelpers.generateToken(
+//       { email: payload?.email },
+//       configs.jwt.verified_token as Secret,
+//       "5m"
+//     );
+//     const verificationLink = `${configs.jwt.front_end_url}/verified?token=${verifiedToken}`;
+
+//     // Commit transaction
+//     await session.commitTransaction();
+
+//     // Send email with OTP + link
+//     await sendMail({
+//       to: payload?.email,
+//       subject: "Verify Your Account",
+//       name: payload?.name,
+//       textBody: `Your OTP is ${otp} and expires in 10 minutes.`,
+//       htmlBody: `
+//         <p>Welcome ${payload?.name},</p>
+//         <p>Your verification OTP is:</p>
+//         <h2 style="text-align:center;">${otp}</h2>
+//         <p>This OTP will expire in <b>10 minutes</b>.</p>
+
+//         <p>Or verify using this link:</p>
+//         <div style="text-align: center; margin: 25px 0;">
+//             <a href="${verificationLink}" target="_blank"
+//                 style="background-color:#4CAF50; color:#fff; padding:12px 22px; border-radius:6px; text-decoration:none;">
+//                 Verify Email
+//             </a>
+//         </div>
+//       `,
+//     });
+
+//     return newAccount[0];
+//   } catch (error) {
+//     await session.abortTransaction();
+//     throw error;
+//   } finally {
+//     session.endSession();
+//   }
+// };
 
 // login user
 const login_user_from_db = async (payload: TLoginPayload) => {
@@ -317,8 +330,7 @@ const change_password_from_db = async (
 //   return "Check your email for reset link";
 // };
 
-
-const forget_password_from_db= async (email: string) => {
+const forget_password_from_db = async (email: string) => {
   const account = await Account_Model.findOne({ email });
   if (!account) throw new AppError("Account not found!", 404);
 
@@ -401,9 +413,8 @@ const reset_password_into_db_otp = async (
 
   // Trim values
   const dbOtp = account.otp?.trim();
-  
-  const inputOtp = otp.trim();
 
+  const inputOtp = otp.trim();
 
   if (!dbOtp || dbOtp !== inputOtp) {
     throw new AppError("Invalid OTP!", 400);
@@ -572,10 +583,9 @@ const verify_otp_service = async (email: string, otp: string) => {
   return { message: "Account verified successfully" };
 };
 
-
-
 export const auth_services = {
   register_user_into_db,
+
   login_user_from_db,
   get_my_profile_from_db,
   refresh_token_from_db,
