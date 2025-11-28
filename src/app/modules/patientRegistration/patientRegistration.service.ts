@@ -1,3 +1,4 @@
+import { PatientManagementModel } from "../patientManagements/patientManagement.model";
 import { getPatientModel } from "./patientRegistration.model";
 
 export const createPatientRegistration = async (payload: any) => {
@@ -6,6 +7,38 @@ export const createPatientRegistration = async (payload: any) => {
   console.log("patient form", patient);
   return await patient.save();
 };
+
+// export const createPatientRegistration = async (payload: any) => {
+//   try {
+//     console.log("➡️ Incoming payload:", payload);
+
+//     const PatientModel = await getPatientModel();
+
+//     const patient = new PatientModel(payload);
+//     const savedPatient: any = await patient.save();
+
+//     console.log("✔ Patient saved:", savedPatient);
+
+//     // Create management
+//     const management = await PatientManagementModel.create({
+//       patientId: savedPatient._id.toString(),
+//       campId: savedPatient.campID,
+//       campName: savedPatient.campName || "",
+//       patientName: savedPatient.Name || "",
+//       status: "Wating for Registration",
+//       waitTime: savedPatient.waitTime ?? "0",
+//       complianceStatus: "Pending",
+//     });
+
+//     console.log("✔ Patient Management Created:", management);
+
+//     return savedPatient;
+
+//   } catch (error) {
+//     console.error("❌ ERROR creating patient or management:", error);
+//     throw error;
+//   }
+// };
 
 export const getAllPatients = async () => {
   const PatientModel = await getPatientModel();
@@ -17,16 +50,32 @@ export const getPatientById = async (id: string) => {
   return await PatientModel.findById(id);
 };
 
-// export const updatePatient = async (id: string, payload: any) => {
+
+// export const updatePatientRegistration = async (id: string, payload: any) => {
 //   const PatientModel = await getPatientModel();
-//   const patient = await PatientModel.findByIdAndUpdate(id, payload, { new: true });
-//   if (!patient) throw new Error("Patient not found");
-//   return patient;
+//   return await PatientModel.findByIdAndUpdate(id, payload, { new: true });
 // };
 
 export const updatePatientRegistration = async (id: string, payload: any) => {
   const PatientModel = await getPatientModel();
-  return await PatientModel.findByIdAndUpdate(id, payload, { new: true });
+
+  // Get existing patient
+  const existing = await PatientModel.findById(id);
+  if (!existing) return null;
+
+  // Merge new data into existing data
+  for (const key in payload) {
+    if (!payload[key]) continue; // skip empty or undefined fields
+
+    // If section exists, merge fields
+    if (typeof payload[key] === "object" && !Array.isArray(payload[key])) {
+      existing[key] = { ...existing[key]?.toObject(), ...payload[key] };
+    } else {
+      existing[key] = payload[key];
+    }
+  }
+
+  return await existing.save();
 };
 
 export const deletePatient = async (id: string) => {
