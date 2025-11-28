@@ -3,8 +3,8 @@ import { IpatientManagement } from "./patientManagement.interface";
 
 const patientManagementSchema = new Schema<IpatientManagement>(
   {
-    patientId: { type: String, required: true },
-    campId: { type: String, required: true },
+    patientId: { type: String},
+    campId: { type: String },
     campName: {type: String},
     patientName: { type: String },
     status: {

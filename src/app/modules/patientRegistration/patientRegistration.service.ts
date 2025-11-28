@@ -8,37 +8,6 @@ export const createPatientRegistration = async (payload: any) => {
   return await patient.save();
 };
 
-// export const createPatientRegistration = async (payload: any) => {
-//   try {
-//     console.log("➡️ Incoming payload:", payload);
-
-//     const PatientModel = await getPatientModel();
-
-//     const patient = new PatientModel(payload);
-//     const savedPatient: any = await patient.save();
-
-//     console.log("✔ Patient saved:", savedPatient);
-
-//     // Create management
-//     const management = await PatientManagementModel.create({
-//       patientId: savedPatient._id.toString(),
-//       campId: savedPatient.campID,
-//       campName: savedPatient.campName || "",
-//       patientName: savedPatient.Name || "",
-//       status: "Wating for Registration",
-//       waitTime: savedPatient.waitTime ?? "0",
-//       complianceStatus: "Pending",
-//     });
-
-//     console.log("✔ Patient Management Created:", management);
-
-//     return savedPatient;
-
-//   } catch (error) {
-//     console.error("❌ ERROR creating patient or management:", error);
-//     throw error;
-//   }
-// };
 
 export const getAllPatients = async () => {
   const PatientModel = await getPatientModel();
