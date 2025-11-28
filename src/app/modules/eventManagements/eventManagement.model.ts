@@ -36,7 +36,7 @@ import {
 const campSchema = new Schema<ICamp>(
   {
     campName: { type: String, required: true },
-    location: { type: String, required: true },
+    location: { type: String },
     // ⭐ Add this
     locationCoords: {
       type: {
