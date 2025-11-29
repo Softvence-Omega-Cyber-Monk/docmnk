@@ -69,7 +69,7 @@ const sendMail = async (payload: TMailContent) => {
                 style=" margin-top: 60px; text-align: center;">
                 
                     <img style="width: 50px; height: 50px; border-radius: 50%;"
-                        src="https://i.postimg.cc/SQ9rGkw1/logo.jpg"
+                        src="https://res.cloudinary.com/dsi00lpgf/image/upload/v1764391074/logo_e0v2k9.jpg"
                         alt="">
                
                 <p style="font-size: 12px;">The Support Team</p>

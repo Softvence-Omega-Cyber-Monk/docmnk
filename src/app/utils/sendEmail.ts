@@ -10,7 +10,7 @@ export const sendEmail = async (to: string, subject: string, message: string) =>
   });
 
   const mailOptions = {
-    from: `"HealthCare System" <${process.env.APP_USER_EMAIL}>`,
+    from: `"Medixcamp HealthCare System" <${process.env.APP_USER_EMAIL}>`,
     to,
     subject,
     html: `<p>${message}</p>`,
