@@ -43,7 +43,7 @@ const buildPatientSchema = async (): Promise<Schema> => {
 
   // Common global fields (not section-based)
   schemaFields.campName = { type: String };
-  schemaFields.campID = { type: String };
+  schemaFields.campId = { type: String };
   schemaFields.status = { type: String};
 
   schemaFields.report = { type: Schema.Types.Mixed };
