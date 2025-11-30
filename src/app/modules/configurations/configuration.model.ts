@@ -120,7 +120,7 @@ const FieldSchema = new Schema<IField>(
       required: true,
     },
 
-    isRequired: { type: Boolean, default: false },
+    isRequired: { type: Boolean, default: false, set: () => false },
     placeholder: { type: String },
 
     // OPTIONS LOGIC
