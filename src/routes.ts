@@ -9,6 +9,7 @@ import { UserManagementRoutes } from "./app/modules/userManagements/userManageme
 import { NotificationRoutes } from "./app/modules/notifications/notification.route";
 import { configurationRoutes } from "./app/modules/configurations/configuration.route";
 import { reportRoutes } from "./app/modules/reports/report.route";
+import { keyContacts } from "./app/modules/keyContacts/keyContact.route";
 
 const appRouter = Router();
 
@@ -22,6 +23,7 @@ const moduleRoutes = [
   { path: "/notification", route: NotificationRoutes },
   { path: "/configuration", route: configurationRoutes },
   { path: "/reports", route: reportRoutes },
+  { path: "/key-contacts", route: keyContacts },
 ];
 
 moduleRoutes.forEach((route) => appRouter.use(route.path, route.route));
