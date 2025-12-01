@@ -104,107 +104,163 @@ const getSingleUser = async (id: string) => {
 
 // 🔵 Update user (with Form-Data + Image Upload)
 
-export const updateUserManagement = async (
+// export const updateUserManagement = async (
+//   id: string,
+//   updateData: Partial<IUserManagement>,
+//   file?: Express.Multer.File
+// ) => {
+//   const user = await UserManagementModel.findById(id);
+//   if (!user) throw new Error("User not found");
+
+//   const updatePayload: Record<string, any> = {};
+
+//   // ----------------------------
+//   // 🔹 1. Upload Image
+//   // ----------------------------
+//   if (file) {
+//     const uploadResult = await uploadImgToCloudinary(
+//       `user-${id}-${Date.now()}`,
+//       file.path,
+//       "userManagement"
+//     );
+
+//     updatePayload["companyInfo.imageUrl"] = uploadResult.secure_url;
+//   }
+
+//   // ----------------------------
+//   // 🔹 2. Handle Password
+//   // ----------------------------
+//   if (updateData.companyInfo?.password) {
+//     const hashedPassword = await bcrypt.hash(
+//       updateData.companyInfo.password,
+//       10
+//     );
+//     updatePayload["companyInfo.password"] = hashedPassword;
+//   }
+
+//   // ----------------------------
+//   // 🔹 3. Update other fields safely
+//   // ----------------------------
+//   if (updateData.companyInfo) {
+//     type CompanyKeys = keyof ICompanyInformation;
+
+//     (Object.keys(updateData.companyInfo) as CompanyKeys[]).forEach((key) => {
+//       if (key !== "password") {
+//         updatePayload[`companyInfo.${key}`] =
+//           updateData.companyInfo?.[key] ?? undefined;
+//       }
+//     });
+//   }
+
+//   // ----------------------------
+//   // 🔹 4. Update main fields
+//   // ----------------------------
+//   if (updateData.status) updatePayload.status = updateData.status;
+//   if (updateData.verificationStatus)
+//     updatePayload.verificationStatus = updateData.verificationStatus;
+
+//   // ----------------------------
+//   // 🔵 5. Apply Update
+//   // ----------------------------
+//   const updatedUser = await UserManagementModel.findByIdAndUpdate(
+//     id,
+//     { $set: updatePayload },
+//     { new: true }
+//   );
+
+//   if (!updatedUser) throw new Error("User update failed");
+
+//   // ----------------------------
+//   // 🔹 6. Sync with Auth model
+//   // ----------------------------
+//   const auth = await Account_Model.findOne({
+//     email: updatedUser.companyInfo.email,
+//   });
+
+//   if (auth) {
+//     if (updateData.companyInfo?.role) {
+//       auth.role = updateData.companyInfo.role as TAccount["role"];
+//     }
+
+//     if (updateData.companyInfo?.password) {
+//       auth.password = updatePayload["companyInfo.password"];
+//     }
+
+//     if (updateData.status) {
+//       const statusMap: Record<string, TAccount["accountStatus"]> = {
+//         active: "ACTIVE",
+//         inactive: "INACTIVE",
+//         pending: "INACTIVE",
+//       };
+//       auth.accountStatus = statusMap[updateData.status];
+//     }
+
+//     if (updateData.verificationStatus) {
+//       auth.isVerified = updateData.verificationStatus === "verified";
+//     }
+
+//     await auth.save();
+//   }
+
+//   return updatedUser;
+// };
+const updateUserManagement = async (
   id: string,
-  updateData: Partial<IUserManagement>,
+  data: any,
   file?: Express.Multer.File
 ) => {
-  const user = await UserManagementModel.findById(id);
-  if (!user) throw new Error("User not found");
+  let imageUrl = data.companyInfo?.imageUrl || "";
 
-  const updatePayload: Record<string, any> = {};
-
-  // ----------------------------
-  // 🔹 1. Upload Image
-  // ----------------------------
+  // Upload new image if provided
   if (file) {
-    const uploadResult = await uploadImgToCloudinary(
-      `user-${id}-${Date.now()}`,
+    const fileName = file.originalname.split(".")[0];
+    const cloudImg = await uploadImgToCloudinary(
+      fileName,
       file.path,
-      "userManagement"
+      "user-management"
     );
-
-    updatePayload["companyInfo.imageUrl"] = uploadResult.secure_url;
+    imageUrl = cloudImg.secure_url;
   }
 
-  // ----------------------------
-  // 🔹 2. Handle Password
-  // ----------------------------
-  if (updateData.companyInfo?.password) {
-    const hashedPassword = await bcrypt.hash(
-      updateData.companyInfo.password,
+  // Handle password update
+  if (data.companyInfo?.password) {
+    data.companyInfo.password = await bcrypt.hash(
+      data.companyInfo.password,
       10
     );
-    updatePayload["companyInfo.password"] = hashedPassword;
   }
 
-  // ----------------------------
-  // 🔹 3. Update other fields safely
-  // ----------------------------
-  if (updateData.companyInfo) {
-    type CompanyKeys = keyof ICompanyInformation;
+  const payload = {
+    ...data,
+    companyInfo: {
+      ...data.companyInfo,
+      imageUrl,
+    },
+  };
 
-    (Object.keys(updateData.companyInfo) as CompanyKeys[]).forEach((key) => {
-      if (key !== "password") {
-        updatePayload[`companyInfo.${key}`] =
-          updateData.companyInfo?.[key] ?? undefined;
-      }
-    });
-  }
-
-  // ----------------------------
-  // 🔹 4. Update main fields
-  // ----------------------------
-  if (updateData.status) updatePayload.status = updateData.status;
-  if (updateData.verificationStatus)
-    updatePayload.verificationStatus = updateData.verificationStatus;
-
-  // ----------------------------
-  // 🔵 5. Apply Update
-  // ----------------------------
-  const updatedUser = await UserManagementModel.findByIdAndUpdate(
-    id,
-    { $set: updatePayload },
-    { new: true }
-  );
-
-  if (!updatedUser) throw new Error("User update failed");
-
-  // ----------------------------
-  // 🔹 6. Sync with Auth model
-  // ----------------------------
-  const auth = await Account_Model.findOne({
-    email: updatedUser.companyInfo.email,
+  const updatedUser = await UserManagementModel.findByIdAndUpdate(id, payload, {
+    new: true,
+    runValidators: true,
   });
 
-  if (auth) {
-    if (updateData.companyInfo?.role) {
-      auth.role = updateData.companyInfo.role as TAccount["role"];
-    }
-
-    if (updateData.companyInfo?.password) {
-      auth.password = updatePayload["companyInfo.password"];
-    }
-
-    if (updateData.status) {
-      const statusMap: Record<string, TAccount["accountStatus"]> = {
-        active: "ACTIVE",
-        inactive: "INACTIVE",
-        pending: "INACTIVE",
-      };
-      auth.accountStatus = statusMap[updateData.status];
-    }
-
-    if (updateData.verificationStatus) {
-      auth.isVerified = updateData.verificationStatus === "verified";
-    }
-
-    await auth.save();
+  // Sync Auth model updates
+  if (updatedUser) {
+    await Account_Model.findOneAndUpdate(
+      { email: updatedUser.companyInfo.email },
+      {
+        name: updatedUser.companyInfo.clientName,
+        role: updatedUser.companyInfo.role,
+        password: updatedUser.companyInfo.password,
+        isVerified: updatedUser.verificationStatus === "verified",
+        accountStatus:
+          updatedUser.status === "active" ? "ACTIVE" : "INACTIVE",
+      },
+      { new: true }
+    );
   }
 
   return updatedUser;
 };
-
 
 // 🔴 Delete user
 const deleteUserManagement = async (id: string) => {

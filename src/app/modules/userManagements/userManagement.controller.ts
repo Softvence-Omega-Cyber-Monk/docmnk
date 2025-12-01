@@ -108,17 +108,50 @@ const getSingleUserManagement = async (req: Request, res: Response) => {
 //   }
 // };
 
+// const updateUserManagement = async (req: Request, res: Response) => {
+//   try {
+//     const result = await UserManagementService.updateUserManagement(
+//       req.params.id,
+//       req.body,
+//       req.file // ⬅️ image from form-data
+//     );
+
+//     res.json({ success: true, data: result });
+//   } catch (error: any) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
 const updateUserManagement = async (req: Request, res: Response) => {
   try {
+    const { id } = req.params;
+
+    const payload = {
+      ...req.body,
+      companyInfo: req.body.companyInfo
+        ? JSON.parse(req.body.companyInfo)
+        : undefined,
+      referrerInfo: req.body.referrerInfo
+        ? JSON.parse(req.body.referrerInfo)
+        : undefined,
+    };
+
     const result = await UserManagementService.updateUserManagement(
-      req.params.id,
-      req.body,
-      req.file // ⬅️ image from form-data
+      id,
+      payload,
+      req.file
     );
 
-    res.json({ success: true, data: result });
+    res.status(200).json({
+      success: true,
+      message: "User updated successfully",
+      data: result,
+    });
   } catch (error: any) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to update user",
+    });
   }
 };
 
