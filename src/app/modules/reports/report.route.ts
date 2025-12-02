@@ -10,5 +10,6 @@ const upload = multer({ dest: "uploads/" });
 // Simple route - no dynamic middleware needed for reports
 router.post("/upload", upload.array("reports", 10), reportController.uploadReport);
 router.get("/getSingleReport/:patientId", reportController.getReports);
+router.get("/getAllReports", reportController.getAllReportsController);
 
 export const reportRoutes = router;
