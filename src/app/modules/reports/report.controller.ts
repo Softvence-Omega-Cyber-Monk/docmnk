@@ -75,7 +75,7 @@
 import { Request, Response } from "express";
 import { reportService } from "./report.service";
 
-export const uploadReport = async (req: Request, res: Response): Promise<void> => {
+const uploadReport = async (req: Request, res: Response): Promise<void> => {
   try {
     const { patientId } = req.body;
     const files = req.files as Express.Multer.File[];
@@ -109,39 +109,77 @@ export const uploadReport = async (req: Request, res: Response): Promise<void> =
   }
 };
 
-export const getReports = async (req: Request, res: Response): Promise<void> => {
+// const getReports = async (req: Request, res: Response): Promise<void> => {
+//   try {
+//     const { patientId } = req.params;
+
+//     if (!patientId) {
+//       res.status(400).json({
+//         success: false,
+//         message: "Patient ID is required"
+//       });
+//       return;
+//     }
+
+//     const reports = await reportService.getReports(patientId);
+    
+//     res.status(200).json({
+//       success: true,
+//       message: "Reports fetched successfully",
+//       data: reports
+//     });
+//   } catch (error) {
+//     console.error("Error in getReports controller:", error);
+    
+//     const errorMessage = error instanceof Error ? error.message : "Internal server error";
+//     const statusCode = errorMessage.includes("Patient ID") ? 400 : 500;
+
+//     res.status(statusCode).json({
+//       success: false,
+//       message: errorMessage
+//     });
+//   }
+// };
+
+
+const getReports = async (req: Request, res: Response) => {
   try {
     const { patientId } = req.params;
 
-    if (!patientId) {
-      res.status(400).json({
-        success: false,
-        message: "Patient ID is required"
-      });
-      return;
-    }
+    const result = await reportService.getReports(patientId);
 
-    const reports = await reportService.getReports(patientId);
-    
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Reports fetched successfully",
-      data: reports
+      data: result, // Contains campName for each report
     });
-  } catch (error) {
-    console.error("Error in getReports controller:", error);
-    
-    const errorMessage = error instanceof Error ? error.message : "Internal server error";
-    const statusCode = errorMessage.includes("Patient ID") ? 400 : 500;
-
-    res.status(statusCode).json({
+  } catch (error: any) {
+    console.error("❌ getReportsController:", error);
+    return res.status(500).json({
       success: false,
-      message: errorMessage
+      message: error.message || "Failed to fetch reports",
+    });
+  }
+};
+
+const getAllReportsController = async (req: Request, res: Response) => {
+  try {
+    const result = await reportService.getAllReports();
+
+    return res.status(200).json({
+      message: "All reports fetched successfully",
+      data: result,
+    });
+  } catch (error: any) {
+    console.error("❌ Controller Error:", error);
+    return res.status(500).json({
+      message: error.message || "Failed to fetch all reports",
     });
   }
 };
 
 export const reportController = {
   uploadReport,
-  getReports
+  getReports,
+  getAllReportsController,
 };
