@@ -179,10 +179,35 @@ const deleteUserManagement = async (req: Request, res: Response) => {
   }
 };
 
+const getSpecificUserStafController = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { userId } = req.params;
+
+    const result = await UserManagementService.getAllSpecificUserStaf(userId);
+
+    return res.status(200).json({
+      success: true,
+      message: "Staff fetched successfully",
+      data: result,
+    });
+  } catch (error: any) {
+    return res.status(400).json({
+      success: false,
+      message: error.message || "Failed to fetch user staff",
+    });
+  }
+};
+
+
+
 export const UserManagementController = {
     createUserManagement,
     getAllUserManagement,
     getSingleUserManagement,
     updateUserManagement,
     deleteUserManagement,
+    getSpecificUserStafController,
 };

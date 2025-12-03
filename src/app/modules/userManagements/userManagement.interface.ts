@@ -17,6 +17,7 @@ export interface IReferrerInformation {
 }
 
 export interface IUserManagement {
+  userId: string;
   // Company Information
   companyInfo: ICompanyInformation;
   

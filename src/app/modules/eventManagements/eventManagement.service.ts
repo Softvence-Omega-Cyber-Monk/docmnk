@@ -81,6 +81,18 @@ const findNearbyCamps = async (latitude: number, longitude: number, maxDistance 
   return nearbyCamps;
 };
 
+const getAllCampsSpecificUser = async (userId: string) => {
+  try {
+    const camps = await CampModel.find({ userId })
+      .sort({ createdAt: -1 }); // latest first
+
+    return camps;
+  } catch (error) {
+    console.error("Error fetching camps:", error);
+    throw new Error("Unable to fetch camps");
+  }
+};
+
 export const EventManagementService = {
   createCamp,
   getAllCamps,

@@ -120,6 +120,7 @@ const getNearbyCampsController = async (req: Request, res: Response) => {
   }
 };
 
+
 export const EventManagementController = {
   createCamp,
   getAllCamps,

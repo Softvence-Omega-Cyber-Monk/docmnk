@@ -1,7 +1,10 @@
 // userManagement.service.ts
 import { UserManagementModel } from "./userManagement.model";
 import { Account_Model } from "../auth/auth.schema";
-import { ICompanyInformation, IUserManagement } from "./userManagement.interface";
+import {
+  ICompanyInformation,
+  IUserManagement,
+} from "./userManagement.interface";
 import { TAccount } from "../auth/auth.interface";
 import { User_Model } from "../user/user.schema";
 import { TUser } from "../user/user.interface";
@@ -11,6 +14,14 @@ import { uploadImgToCloudinary } from "../../utils/cloudinary";
 const createUserManagement = async (data: IUserManagement) => {
   // 🔐 Hash password before saving
   const hashedPassword = await bcrypt.hash(data.companyInfo.password, 10);
+
+  const existingUser = await Account_Model.findOne({
+    _id: data.userId,
+  });
+
+  if (!existingUser) {
+    throw new Error("User not found");
+  }
 
   // Create UserManagement document with hashed password
   const user = await UserManagementModel.create({
@@ -55,7 +66,6 @@ const createUserManagement = async (data: IUserManagement) => {
 
   return user;
 };
-
 
 // 🟡 Get all users
 const getAllUsers = async () => {
@@ -252,8 +262,7 @@ const updateUserManagement = async (
         role: updatedUser.companyInfo.role,
         password: updatedUser.companyInfo.password,
         isVerified: updatedUser.verificationStatus === "verified",
-        accountStatus:
-          updatedUser.status === "active" ? "ACTIVE" : "INACTIVE",
+        accountStatus: updatedUser.status === "active" ? "ACTIVE" : "INACTIVE",
       },
       { new: true }
     );
@@ -268,10 +277,21 @@ const deleteUserManagement = async (id: string) => {
   return user;
 };
 
+const getAllSpecificUserStaf = async (userId: string) => {
+  if (!userId) {
+    throw new Error("userId is required");
+  }
+
+  const staff = await UserManagementModel.find({ userId });
+
+  return staff;
+};
+
 export const UserManagementService = {
   createUserManagement,
   getAllUsers,
   getSingleUser,
   updateUserManagement,
   deleteUserManagement,
+  getAllSpecificUserStaf,
 };
