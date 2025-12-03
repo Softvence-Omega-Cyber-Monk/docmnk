@@ -135,7 +135,7 @@ const extractPatientName = (reg: any) => {
   if (!reg) return null;
 
   const key = Object.keys(reg).find(k =>
-    k.toLowerCase().includes("name")
+    k.toLowerCase().includes("name" )
   );
 
   return key ? reg[key] : null;
