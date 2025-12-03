@@ -12,6 +12,8 @@ import { User_Model } from "./app/modules/user/user.schema";
 // Cron job for auto-updating camp status
 import "./app/modules/eventManagements/autoStatusUpdate";
 
+import "./app/modules/patientManagements/autoresetTodayPatient";
+
 // define app
 const app = express();
 // Important: parse JSON bodies
