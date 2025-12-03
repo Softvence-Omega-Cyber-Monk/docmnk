@@ -1,3 +1,4 @@
+import { id } from "zod/v4/locales";
 import { configs } from "../../configs";
 import catchAsync from "../../utils/catch_async";
 import { uploadImgToCloudinary } from "../../utils/cloudinary";
@@ -52,6 +53,7 @@ const login_user = catchAsync(async (req, res) => {
         success: true,
         message: 'User is logged in successful !',
         data: {
+            userId: result._id,
             accessToken: result.accessToken,
             role: result?.role
         },

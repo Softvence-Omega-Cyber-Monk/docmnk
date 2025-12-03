@@ -1,4 +1,3 @@
-
 // import mongoose, { Schema, Document, Model } from "mongoose";
 // import { Configuration } from "../configurations/configuration.model";
 
@@ -65,7 +64,7 @@
 // //   const schema = await buildPatientSchema();
 // //   return mongoose.model<IPatientRegistrationModel>(modelName, schema);
 // // };
-// export const getPatientModel = async (Registration: any): Promise<
+// export const getPatientModel = async (): Promise<
 //   Model<IPatientRegistrationModel>
 // > => {
 //   const modelName = "PatientRegistration";
@@ -79,32 +78,43 @@
 //   return mongoose.model<IPatientRegistrationModel>(modelName, schema);
 // };
 
-
-
 import mongoose, { Schema, Document, Model } from "mongoose";
 import { Configuration } from "../configurations/configuration.model";
 
 export interface IPatientRegistrationModel extends Document {
   [key: string]: any;
-}
+};
 
-// 🧠 Map field types from configuration → Mongoose schema types
-const mapFieldType = (fieldType: string) => {
-  switch (fieldType) {
+// 🧠 Map a configuration field to Mongoose type (recursive for nested checkboxes)
+const mapFieldType = (field: any): any => {
+  switch (field.fieldType) {
     case "number":
-      return Number;
+      return { type: Number, required: field.isRequired || false };
     case "date":
-      return Date;
+      return { type: Date, required: field.isRequired || false };
     case "file":
-      return [String];
+      return { type: [String], required: field.isRequired || false };
     case "checkbox":
-      return Boolean;
+      if (field.options && field.options.length > 0) {
+        // nested checkboxes → create sub-schema recursively
+        const subFields: Record<string, any> = {};
+        field.options.forEach((opt: any) => {
+          subFields[opt.fieldName] = mapFieldType(opt);
+        });
+        return { type: new Schema(subFields, { _id: false }), required: field.isRequired || false };
+      }
+      return { type: Boolean, required: field.isRequired || false };
+    case "select":
+    case "radio":
+      return { type: String, required: field.isRequired || false };
+    case "textarea":
+    case "text":
     default:
-      return String;
+      return { type: String, required: field.isRequired || false };
   }
 };
 
-// 🧩 Build schema dynamically from Configuration collection
+// 🧩 Build dynamic patient schema from Configuration collection
 const buildPatientSchema = async (): Promise<Schema> => {
   const configurations = await Configuration.find();
   const schemaFields: Record<string, any> = {};
@@ -114,20 +124,17 @@ const buildPatientSchema = async (): Promise<Schema> => {
     const sectionFields: Record<string, any> = {};
 
     for (const field of config.fields) {
-      sectionFields[field.fieldName] = {
-        type: mapFieldType(field.fieldType),
-        required: field.isRequired || false,
-      };
+      sectionFields[field.fieldName] = mapFieldType(field);
     }
 
-    schemaFields[sectionName] = sectionFields;
+    // Nest section fields under sectionName
+    schemaFields[sectionName] = { type: new Schema(sectionFields, { _id: false }), default: {} };
   }
 
-  // Common global fields (not section-based)
+  // Global fields
   schemaFields.campName = { type: String };
   schemaFields.campId = { type: String };
-  schemaFields.status = { type: String};
-
+  schemaFields.status = { type: String };
   schemaFields.report = { type: Schema.Types.Mixed };
   schemaFields.reportGeneratedAt = { type: Date };
   schemaFields.reportStatus = { type: String, default: "Not Generated" };
@@ -135,24 +142,11 @@ const buildPatientSchema = async (): Promise<Schema> => {
   return new Schema(schemaFields, { timestamps: true });
 };
 
-// 🧠 Get dynamic patient model safely
-// export const getPatientModel = async (): Promise<
-//   Model<IPatientRegistrationModel>
-// > => {
-//   const modelName = "PatientRegistration";
-//   if (mongoose.models[modelName]) {
-//     return mongoose.models[modelName] as Model<IPatientRegistrationModel>;
-//   }
-
-//   const schema = await buildPatientSchema();
-//   return mongoose.model<IPatientRegistrationModel>(modelName, schema);
-// };
-export const getPatientModel = async (): Promise<
-  Model<IPatientRegistrationModel>
-> => {
+// 🧠 Get or create dynamic Patient model safely
+export const getPatientModel = async (): Promise<Model<IPatientRegistrationModel>> => {
   const modelName = "PatientRegistration";
 
-  // ❗ Always delete old model to regenerate dynamic schema
+  // Delete old model if exists (important for dynamic schema updates)
   if (mongoose.models[modelName]) {
     delete mongoose.models[modelName];
   }
