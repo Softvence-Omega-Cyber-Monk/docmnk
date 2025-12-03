@@ -225,6 +225,7 @@ const login_user_from_db = async (payload: TLoginPayload) => {
     configs.jwt.refresh_expires as string
   );
   return {
+    _id: isExistAccount._id,
     accessToken: accessToken,
     refreshToken: refreshToken,
     role: isExistAccount.role,
