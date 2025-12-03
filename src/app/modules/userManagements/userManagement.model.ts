@@ -30,6 +30,7 @@ const ReferrerInformationSchema = new Schema<IReferrerInformation>(
 
 const UserManagementSchema = new Schema<IUserManagementDocument>(
   {
+    userId: { type: String, required: true},
     companyInfo: { type: CompanyInformationSchema, required: true },
     referrerInfo: { type: ReferrerInformationSchema },
     status: { type: String, enum: ["active", "inactive", "pending"], default: "pending", required: true },

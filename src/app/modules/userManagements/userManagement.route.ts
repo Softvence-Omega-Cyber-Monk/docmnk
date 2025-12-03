@@ -9,5 +9,6 @@ router.get("/getAll", UserManagementController.getAllUserManagement);
 router.get("/getSingle/:id", UserManagementController.getSingleUserManagement);
 router.put("/update/:id",uploadSingle, UserManagementController.updateUserManagement);
 router.delete("/delete/:id", UserManagementController.deleteUserManagement);
+router.get("/getAllSpecificUserStaff/:userId", UserManagementController.getSpecificUserStafController);
 
 export const UserManagementRoutes = router;

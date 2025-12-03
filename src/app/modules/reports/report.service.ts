@@ -60,63 +60,124 @@ const uploadReport = async (
   }
 };
 
+// const getReports = async (patientId: string): Promise<any[]> => {
+//   try {
+//     const PatientModel = await getPatientModel();
+
+//     const cleanId = patientId.trim();
+
+//     // ✅ Fetch patient by _id (correct way)
+//     const patient = await PatientModel.findById(cleanId);
+
+//     if (!patient) {
+//       throw new Error("Patient not found");
+//     }
+
+//     // Extract campName and patientName
+//     const campName = patient.campName || null;
+//     const patientName = extractPatientName(patient?.Registration);
+
+//     // ✅ Fetch reports using patientId field in ReportModel
+//     const reports = await ReportModel.find({ patientId: cleanId });
+
+//     // Return structured data
+//     const finalData = reports.map((rep) => ({
+//       reportId: rep._id,
+//       patientId: cleanId,
+//       patientName,
+//       campName,
+//       reports: rep.reports,
+//       createdAt: rep.createdAt,
+//       updatedAt: rep.updatedAt,
+//     }));
+
+//     return finalData;
+//   } catch (error) {
+//     console.error("❌ Error fetching reports:", error);
+//     throw error;
+//   }
+// };
+
+// const getAllReports = async (): Promise<any[]> => {
+//   try {
+//     const PatientModel = await getPatientModel();
+
+//     // Fetch all reports
+//     const reports = await ReportModel.find().sort({ createdAt: -1 });
+
+//     const finalData = [];
+
+//     for (const rep of reports) {
+//       const patientId = rep.patientId;
+
+//       // Fetch patient info by _id
+//       const patient = await PatientModel.findById(patientId);
+
+//       finalData.push({
+//         reportId: rep._id,
+//         patientId,
+//         patientName: patient?.Registration?.fullName || null,
+//         campName: patient?.campName || null,
+//         reports: rep.reports,
+//         createdAt: rep.createdAt,
+//         updatedAt: rep.updatedAt,
+//       });
+//     }
+
+//     return finalData;
+//   } catch (error) {
+//     console.error("❌ Error fetching all reports:", error);
+//     throw error;
+//   }
+// };
+
+const extractPatientName = (reg: any) => {
+  if (!reg) return null;
+
+  const key = Object.keys(reg).find(k =>
+    k.toLowerCase().includes("name")
+  );
+
+  return key ? reg[key] : null;
+};
+
 const getReports = async (patientId: string): Promise<any[]> => {
-  try {
-    const PatientModel = await getPatientModel();
+  const PatientModel = await getPatientModel();
+  const cleanId = patientId.trim();
 
-    const cleanId = patientId.trim();
+  const patient = await PatientModel.findById(cleanId);
+  if (!patient) throw new Error("Patient not found");
 
-    // ✅ Fetch patient by _id (correct way)
-    const patient = await PatientModel.findById(cleanId);
+  const patientName = extractPatientName(patient?.Registration) || "Unknown";
+  const campName = patient?.campName || null;
 
-    if (!patient) {
-      throw new Error("Patient not found");
-    }
+  const reports = await ReportModel.find({ patientId: cleanId });
 
-    // Extract campName and patientName
-    const campName = patient.campName || null;
-    const patientName = patient?.Registration?.fullName || null;
-
-    // ✅ Fetch reports using patientId field in ReportModel
-    const reports = await ReportModel.find({ patientId: cleanId });
-
-    // Return structured data
-    const finalData = reports.map((rep) => ({
-      reportId: rep._id,
-      patientId: cleanId,
-      patientName,
-      campName,
-      reports: rep.reports,
-      createdAt: rep.createdAt,
-      updatedAt: rep.updatedAt,
-    }));
-
-    return finalData;
-  } catch (error) {
-    console.error("❌ Error fetching reports:", error);
-    throw error;
-  }
+  return reports.map((rep) => ({
+    reportId: rep._id,
+    patientId: cleanId,
+    patientName,        // ✅ Must be here
+    campName,
+    reports: rep.reports,
+    createdAt: rep.createdAt,
+    updatedAt: rep.updatedAt,
+  }));
 };
 
 const getAllReports = async (): Promise<any[]> => {
   try {
     const PatientModel = await getPatientModel();
-
-    // Fetch all reports
     const reports = await ReportModel.find().sort({ createdAt: -1 });
 
     const finalData = [];
 
     for (const rep of reports) {
-      const patientId = rep.patientId;
-
-      // Fetch patient info by _id
-      const patient = await PatientModel.findById(patientId);
+      const patient = await PatientModel.findById(rep.patientId);
 
       finalData.push({
         reportId: rep._id,
-        patientId,
-        patientName: patient?.Registration?.fullName || null,
+        patientId: rep.patientId,
+        patientName: extractPatientName(patient?.Registration),
         campName: patient?.campName || null,
         reports: rep.reports,
         createdAt: rep.createdAt,
@@ -130,6 +191,7 @@ const getAllReports = async (): Promise<any[]> => {
     throw error;
   }
 };
+
 
 export const reportService = {
   uploadReport,
