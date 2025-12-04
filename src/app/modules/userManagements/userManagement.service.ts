@@ -13,7 +13,7 @@ import { uploadImgToCloudinary } from "../../utils/cloudinary";
 
 const createUserManagement = async (data: IUserManagement) => {
   // 🔐 Hash password before saving
-  const hashedPassword = await bcrypt.hash(data.companyInfo.password, 10);
+  const hashedPassword = await bcrypt.hash((data.companyInfo.password)as any, 10);
 
   const existingUser = await Account_Model.findOne({
     _id: data.userId,

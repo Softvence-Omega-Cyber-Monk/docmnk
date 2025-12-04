@@ -11,7 +11,7 @@ const CompanyInformationSchema = new Schema<ICompanyInformation>(
     email: { type: String, required: true, unique: true },
     phoneNumber: { type: String, required: true },
     imageUrl: { type: String }, // Optional field
-    password: { type: String, required: true },
+    password: { type: String, required: false },
     isReferred: { type: Boolean, default: false },
   },
   { _id: false }
