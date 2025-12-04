@@ -5,6 +5,7 @@ const authSchema = new Schema<TAccount>(
   {
     name: { type: String, required: true },
     email: { type: String, required: true },
+    phoneNumber: { type: String, required: false },
     password: { type: String, required: true },
     image: { type: String, required: false },
     lastPasswordChange: { type: String },

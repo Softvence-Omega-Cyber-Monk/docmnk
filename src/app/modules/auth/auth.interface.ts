@@ -1,6 +1,7 @@
 export type TAccount = {
     name: string;
     email: string;
+    phoneNumber?: string;
     password: string;
     lastPasswordChange?: Date;
     image?: string;
