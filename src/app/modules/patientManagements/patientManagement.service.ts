@@ -21,7 +21,9 @@ const createPatientManagement = async (payload: IpatientManagement) => {
   if (payload.campId) {
     await PatientRegistration.findByIdAndUpdate(
       payload.patientId,
-      { campName: camp?.campName },
+      { campName: camp?.campName, 
+        campId: camp?._id
+      },
       { new: true }
     );
   }

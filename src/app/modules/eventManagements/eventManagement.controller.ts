@@ -120,6 +120,25 @@ const getNearbyCampsController = async (req: Request, res: Response) => {
   }
 };
 
+const getCampStationCompletionRates = async (req: Request, res: Response) => {
+  try {
+    const { campId } = req.params;
+
+    const result = await EventManagementService.getCampStationCompletion(campId);
+
+    return res.status(200).json({
+      success: true,
+      message: "Station completion rates fetched successfully",
+      data: result
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 
 export const EventManagementController = {
   createCamp,
@@ -128,4 +147,5 @@ export const EventManagementController = {
   updateCamp,
   deleteCamp,
   getNearbyCampsController,
+  getCampStationCompletionRates,
 };

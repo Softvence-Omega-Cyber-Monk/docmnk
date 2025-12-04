@@ -38,6 +38,7 @@ const register_user_into_db = async (payload: TRegisterPayload) => {
     const accountPayload: TAccount = {
       name: payload.name,
       email: payload.email,
+      phoneNumber: payload.phoneNumber,
       password: hashPassword,
       lastPasswordChange: new Date(),
       image: payload?.image,
