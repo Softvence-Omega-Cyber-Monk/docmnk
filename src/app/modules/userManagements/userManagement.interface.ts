@@ -4,7 +4,7 @@ export interface ICompanyInformation {
   email: string;
   phoneNumber: string;
   imageUrl?: string; // Optional field
-  password: string;
+  password?: string;
   isReferred: boolean;
 }
 
