@@ -12,4 +12,6 @@ router.delete("/deletCamp/:id", EventManagementController.deleteCamp);
 // GET nearby camps
 router.get("/nearby-camps", EventManagementController.getNearbyCampsController);
 
+router.get("/camp-station-completion/:campId", EventManagementController.getCampStationCompletionRates);
+
 export const eventManagementRouter = router;
