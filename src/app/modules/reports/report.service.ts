@@ -131,16 +131,28 @@ const uploadReport = async (
 //   }
 // };
 
-const extractPatientName = (reg: any) => {
-  if (!reg) return null;
 
-  const key = Object.keys(reg).find(k =>
-    k.toLowerCase().includes("name" )
-  );
+/* =======================================================
+   EXTRACT PATIENT NAME
+   Only pick the actual patient "Name" field from Registration
+======================================================= */
+const extractPatientName = (registration: any): string => {
+  if (!registration || typeof registration !== "object") return "Unknown";
 
-  return key ? reg[key] : null;
+  // Prefer 'Name' or 'Full Name' fields explicitly
+  const possibleFields = ["Name", "Full Name", "PatientName", "patientName"];
+  for (const field of possibleFields) {
+    if (registration[field] && typeof registration[field] === "string" && registration[field].trim()) {
+      return registration[field].trim();
+    }
+  }
+
+  return "Unknown";
 };
 
+/* =======================================================
+   GET REPORTS BY PATIENT
+======================================================= */
 const getReports = async (patientId: string): Promise<any[]> => {
   const PatientModel = await getPatientModel();
   const cleanId = patientId.trim();
@@ -148,49 +160,57 @@ const getReports = async (patientId: string): Promise<any[]> => {
   const patient = await PatientModel.findById(cleanId);
   if (!patient) throw new Error("Patient not found");
 
-  const patientName = extractPatientName(patient?.Registration) || "Unknown";
-  const campName = patient?.campName || null;
+  const patientName = extractPatientName(patient.Registration);
+  const campName = patient.campName || null;
+  const campId = patient.campId || null;
 
-  const reports = await ReportModel.find({ patientId: cleanId });
+  const reports = await ReportModel.find({ patientId: cleanId }).sort({ createdAt: -1 });
 
   return reports.map((rep) => ({
     reportId: rep._id,
     patientId: cleanId,
-    patientName,        // ✅ Must be here
+    patientName,
     campName,
-    reports: rep.reports,
+    campId,
+    reports: rep.reports || [],
     createdAt: rep.createdAt,
     updatedAt: rep.updatedAt,
   }));
 };
 
+/* =======================================================
+   GET ALL REPORTS
+======================================================= */
 const getAllReports = async (): Promise<any[]> => {
-  try {
-    const PatientModel = await getPatientModel();
-    const reports = await ReportModel.find().sort({ createdAt: -1 });
+  const PatientModel = await getPatientModel();
+  const reports = await ReportModel.find().sort({ createdAt: -1 });
 
-    const finalData = [];
+  // Preload all patients in one query
+  const patientIds = reports.map(r => r.patientId);
+  const patients = await PatientModel.find({ _id: { $in: patientIds } });
 
-    for (const rep of reports) {
-      const patient = await PatientModel.findById(rep.patientId);
+  // Map patients by _id (cast to string)
+  const patientMap: Record<string, any> = {};
+  patients.forEach(p => {
+    const id = String(p._id); // ✅ cast _id to string
+    patientMap[id] = p;
+  });
 
-      finalData.push({
-        reportId: rep._id,
-        patientId: rep.patientId,
-        patientName: extractPatientName(patient?.Registration),
-        campName: patient?.campName || null,
-        reports: rep.reports,
-        createdAt: rep.createdAt,
-        updatedAt: rep.updatedAt,
-      });
-    }
-
-    return finalData;
-  } catch (error) {
-    console.error("❌ Error fetching all reports:", error);
-    throw error;
-  }
+  return reports.map((rep) => {
+    const patient = patientMap[String(rep.patientId)] || {};
+    return {
+      reportId: rep._id,
+      patientId: rep.patientId,
+      patientName: extractPatientName(patient.Registration),
+      campName: patient.campName || null,
+      campId: patient.campId || null,
+      reports: rep.reports || [],
+      createdAt: rep.createdAt,
+      updatedAt: rep.updatedAt,
+    };
+  });
 };
+
 
 
 export const reportService = {

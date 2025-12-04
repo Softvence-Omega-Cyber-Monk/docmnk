@@ -5,6 +5,7 @@ const reportSchema = new Schema<IReport>(
   {
     patientId: { type: String, required: true },
     patientName: { type: String },
+    campId: { type: String },
     campName: { type: String },
     reports: { type: [String], required: true }
   },
