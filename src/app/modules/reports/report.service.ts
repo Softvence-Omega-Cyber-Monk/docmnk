@@ -211,6 +211,33 @@ const getAllReports = async (): Promise<any[]> => {
   });
 };
 
+// const getReportsByUserId = async (userId: string) => {
+//   if (!userId) {
+//     throw new Error("userId is required");
+//   }
+
+//   const Patient = await getPatientModel();
+
+//   // Step 1: Get all patients created by this user
+//   const patients = await Patient.find({ userId });
+
+//   if (!patients || patients.length === 0) {
+//     return []; // no patients under this user
+//   }
+
+//   // Step 2: Extract patientIds
+//   const patientIds = patients.map((p: any) => p._id.toString());
+
+//   // Step 3: Get all reports for these patientIds
+//   const reports = await ReportModel.find({
+//     patientId: { $in: patientIds },
+//     status: true, // only reports with status true
+//   }).lean();
+
+//   return reports;
+// };
+
+
 const getReportsByUserId = async (userId: string) => {
   if (!userId) {
     throw new Error("userId is required");
@@ -219,23 +246,60 @@ const getReportsByUserId = async (userId: string) => {
   const Patient = await getPatientModel();
 
   // Step 1: Get all patients created by this user
-  const patients = await Patient.find({ userId });
+  const patients = await Patient.find({ userId }).lean();
 
   if (!patients || patients.length === 0) {
     return []; // no patients under this user
   }
 
   // Step 2: Extract patientIds
-  const patientIds = patients.map((p: any) => p._id.toString());
+  const patientIds = patients.map((p: any) => String(p._id));
 
-  // Step 3: Get all reports for these patientIds
+  // Step 3: Get all reports for these patientIds with status=true
   const reports = await ReportModel.find({
     patientId: { $in: patientIds },
+    status: true,
   }).lean();
 
-  return reports;
+  // Step 4: Build a map of patient info
+  const patientMap: Record<string, { name: string; campName: string }> = {};
+  patients.forEach((p: any) => {
+    const registration = p.Registration || {};
+
+    // Try all possible name fields
+    const name =
+      registration.name ||
+      registration.Name ||
+      registration.fullName ||
+      registration.patientName ||
+      "";
+
+    patientMap[String(p._id)] = {
+      name,
+      campName: p?.campName || "",
+    };
+  });
+
+  // Step 5: Merge patient info into each report
+  const finalReports = reports.map((r: any) => ({
+    ...r,
+    patientName: patientMap[r.patientId]?.name || null,
+    campName: patientMap[r.patientId]?.campName || null,
+  }));
+
+  return finalReports;
 };
 
+
+const updateReportStatusService = async (patientId: string, status: boolean) => {
+  const updatedReport = await ReportModel.findOneAndUpdate(
+    { patientId },
+    { status },
+    { new: true }
+  );
+
+  return updatedReport;
+};
 
 
 export const reportService = {
@@ -243,4 +307,5 @@ export const reportService = {
   getReports,
   getAllReports,
   getReportsByUserId,
+  updateReportStatusService,
 };
