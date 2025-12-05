@@ -3,6 +3,7 @@ import { uploadImgToCloudinary } from "../../utils/cloudinary";
 import { IReport } from "./report.interface";
 import { PatientManagementModel } from "../patientManagements/patientManagement.model";
 import { getPatientModel } from "../patientRegistration/patientRegistration.model";
+import status from "http-status";
 
 const uploadReport = async (
   patientId: string,
@@ -173,6 +174,7 @@ const getReports = async (patientId: string): Promise<any[]> => {
     campName,
     campId,
     reports: rep.reports || [],
+    status: rep.status || false,
     createdAt: rep.createdAt,
     updatedAt: rep.updatedAt,
   }));
@@ -205,6 +207,7 @@ const getAllReports = async (): Promise<any[]> => {
       campName: patient.campName || null,
       campId: patient.campId || null,
       reports: rep.reports || [],
+      status: rep.status,
       createdAt: rep.createdAt,
       updatedAt: rep.updatedAt,
     };
