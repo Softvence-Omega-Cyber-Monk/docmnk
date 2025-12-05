@@ -141,6 +141,7 @@ const buildDynamicPatientSchema = async (): Promise<Schema> => {
   sections.status = { type: String };
   sections.reportStatus = { type: String, default: "Not Generated" };
   sections.report = { type: Schema.Types.Mixed };
+  sections.reportApproved= { type: Boolean, default: false };
   sections.reportGeneratedAt = { type: Date };
 
   return new Schema(sections, { timestamps: true, strict: false });

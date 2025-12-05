@@ -295,9 +295,21 @@ const getReportsByUserId = async (userId: string) => {
 
 
 const updateReportStatusService = async (patientId: string, status: boolean) => {
+  const Patient = await getPatientModel();
+
+
   const updatedReport = await ReportModel.findOneAndUpdate(
     { patientId },
     { status },
+    { new: true }
+  );
+    // If no report found return null
+  if (!updatedReport) return null;
+
+  // 2️⃣ Update reportApproved in PatientRegistration
+  await Patient.findByIdAndUpdate(
+    patientId,
+    { reportApproved: status },
     { new: true }
   );
 
