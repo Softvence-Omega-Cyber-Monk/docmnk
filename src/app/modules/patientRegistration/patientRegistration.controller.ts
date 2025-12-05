@@ -370,7 +370,7 @@ const organizeBySection = (
   });
 
   // Global fields
-  ["campId", "campName", "status"].forEach((f) => {
+  ["campId", "campName", "status", "userId"].forEach((f) => {
     if (normalized[f]) output[f] = normalized[f];
   });
 

@@ -11,5 +11,6 @@ const upload = multer({ dest: "uploads/" });
 router.post("/upload", upload.array("reports", 10), reportController.uploadReport);
 router.get("/getSingleReport/:patientId", reportController.getReports);
 router.get("/getAllReports", reportController.getAllReportsController);
+router.get("/getAllSpecificUserReport/:userId", reportController.getUserReports);
 
 export const reportRoutes = router;

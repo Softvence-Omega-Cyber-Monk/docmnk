@@ -140,7 +140,7 @@ const extractPatientName = (registration: any): string => {
   if (!registration || typeof registration !== "object") return "Unknown";
 
   // Prefer 'Name' or 'Full Name' fields explicitly
-  const possibleFields = ["Name", "Full Name", "PatientName", "patientName"];
+  const possibleFields = ["Name", "Full Name", "PatientName", "patientName", "name", "fullName", "patientname", "fullname"];
   for (const field of possibleFields) {
     if (registration[field] && typeof registration[field] === "string" && registration[field].trim()) {
       return registration[field].trim();
@@ -211,10 +211,36 @@ const getAllReports = async (): Promise<any[]> => {
   });
 };
 
+const getReportsByUserId = async (userId: string) => {
+  if (!userId) {
+    throw new Error("userId is required");
+  }
+
+  const Patient = await getPatientModel();
+
+  // Step 1: Get all patients created by this user
+  const patients = await Patient.find({ userId });
+
+  if (!patients || patients.length === 0) {
+    return []; // no patients under this user
+  }
+
+  // Step 2: Extract patientIds
+  const patientIds = patients.map((p: any) => p._id.toString());
+
+  // Step 3: Get all reports for these patientIds
+  const reports = await ReportModel.find({
+    patientId: { $in: patientIds },
+  }).lean();
+
+  return reports;
+};
+
 
 
 export const reportService = {
   uploadReport,
   getReports,
   getAllReports,
+  getReportsByUserId,
 };

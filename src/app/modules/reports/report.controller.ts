@@ -178,8 +178,38 @@ const getAllReportsController = async (req: Request, res: Response) => {
   }
 };
 
+const getUserReports = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: "userId is required",
+      });
+    }
+
+    const result = await reportService.getReportsByUserId(userId);
+
+    return res.status(200).json({
+      success: true,
+      message: "User reports fetched successfully",
+      data: result,
+    });
+  } catch (error: any) {
+    console.error("❌ getUserReports Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to fetch user reports",
+    });
+  }
+};
+
+
 export const reportController = {
   uploadReport,
   getReports,
   getAllReportsController,
+  getUserReports,
 };

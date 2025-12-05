@@ -135,6 +135,7 @@ const buildDynamicPatientSchema = async (): Promise<Schema> => {
   }
 
   // Global fields
+  sections.userId = { type: String };
   sections.campId = { type: String };
   sections.campName = { type: String };
   sections.status = { type: String };
