@@ -4,6 +4,7 @@ export interface IReport {
   campId?: string;
   campName?: string;
   reports: string[]; // Cloudinary URLs
+  status?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
 }

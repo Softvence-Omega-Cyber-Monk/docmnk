@@ -206,10 +206,54 @@ const getUserReports = async (req: Request, res: Response) => {
   }
 };
 
+const updateReportStatusController = async (req: Request, res: Response) => {
+  try {
+    const { patientId } = req.params;
+    const { status } = req.body;
+
+    if (!patientId) {
+      return res.status(400).json({
+        success: false,
+        message: "patientId is required",
+      });
+    }
+
+    if (typeof status !== "boolean") {
+      return res.status(400).json({
+        success: false,
+        message: "status must be a boolean",
+      });
+    }
+
+    const result = await reportService.updateReportStatusService(patientId, status);
+
+    if (!result) {
+      return res.status(404).json({
+        success: false,
+        message: "Report not found for this patient",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Report status updated successfully",
+      data: result,
+    });
+  } catch (error: any) {
+    console.error("❌ updateReportStatusController Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to update report status",
+    });
+  }
+};
+
 
 export const reportController = {
   uploadReport,
   getReports,
   getAllReportsController,
   getUserReports,
+  updateReportStatusController,
 };

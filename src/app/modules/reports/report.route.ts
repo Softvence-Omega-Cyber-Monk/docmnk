@@ -12,5 +12,6 @@ router.post("/upload", upload.array("reports", 10), reportController.uploadRepor
 router.get("/getSingleReport/:patientId", reportController.getReports);
 router.get("/getAllReports", reportController.getAllReportsController);
 router.get("/getAllSpecificUserReport/:userId", reportController.getUserReports);
+router.patch("/updateReportStatus/:patientId", reportController.updateReportStatusController);
 
 export const reportRoutes = router;
