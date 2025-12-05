@@ -7,7 +7,8 @@ const reportSchema = new Schema<IReport>(
     patientName: { type: String },
     campId: { type: String },
     campName: { type: String },
-    reports: { type: [String], required: true }
+    reports: { type: [String], required: true },
+    status: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
