@@ -4,6 +4,7 @@ import { RecipientType, NotificationStatus } from "./notification.interface";
 import { getPatientModel } from "../patientRegistration/patientRegistration.model";
 import { Configuration } from "../configurations/configuration.model";
 import { sendWhatsApp } from "../../utils/sendWhatsApp";
+import { Account_Model } from "../auth/auth.schema";
 
 // Possible dynamic email keys
 const emailKeys = [
@@ -215,15 +216,9 @@ const phoneKeys = [
 // CRUD
 // ------------------------------------------------------------
 
-
-
-
-
 // ------------------------------------------------------------
 // 🟢 CREATE NOTIFICATION
 // ------------------------------------------------------------
-
-
 
 const createNotification = async (data: any) => {
   const notification = await NotificationModel.create(data);
@@ -262,8 +257,14 @@ const sendNotification = async (notificationData: any) => {
         }).lean();
         break;
 
+      // case RecipientType.ALL_PATIENTS:
+      //   recipientsList = await PatientRegistration.find().lean();
+      //   break;
       case RecipientType.ALL_PATIENTS:
-        recipientsList = await PatientRegistration.find().lean();
+        const patients = await PatientRegistration.find().lean();
+        const users = await Account_Model.find({ role: "USER" }).lean(); // ← added
+
+        recipientsList = [...patients, ...users]; // merge
         break;
 
       case RecipientType.ALL_PATIENTS_WITH_UPCOMING_APPOINTMENTS:
@@ -336,7 +337,11 @@ const sendNotification = async (notificationData: any) => {
       // -------------------------------
       if (email) {
         try {
-          await sendEmail(email, notificationData.subject, notificationData.message);
+          await sendEmail(
+            email,
+            notificationData.subject,
+            notificationData.message
+          );
           console.log(`Email sent → ${email}`);
           successfulSends++;
         } catch (err: any) {
