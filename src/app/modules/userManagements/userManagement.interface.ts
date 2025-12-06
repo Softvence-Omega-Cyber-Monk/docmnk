@@ -1,3 +1,5 @@
+import mongoose from "mongoose";
+
 export interface ICompanyInformation {
   clientName: string;
   role: string;
@@ -23,6 +25,7 @@ export interface IUserManagement {
   
   // Referrer Information (conditional - only if referred)
   referrerInfo?: IReferrerInformation;
+  stafId?: mongoose.Types.ObjectId;
   
   // System fields
   createdAt: Date;
