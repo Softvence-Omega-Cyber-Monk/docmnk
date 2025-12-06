@@ -70,7 +70,6 @@ import mongoose from "mongoose";
 
 // 🟡 Get all users
 
-
 const createUserManagement = async (data: IUserManagement) => {
   const hashedPassword = await bcrypt.hash(
     data.companyInfo.password as any,
@@ -84,6 +83,20 @@ const createUserManagement = async (data: IUserManagement) => {
 
   if (!existingUser) {
     throw new Error("User not found");
+  }
+
+  // 🚨 CHECK 1: Prevent email duplicates
+  const emailInUse = await Account_Model.findOne({
+    email: data.companyInfo.email,
+  });
+
+  if (emailInUse) {
+    // If trying to assign the same email for different staff → block
+    if (emailInUse._id.toString() !== userObjectId.toString()) {
+      throw new Error(
+        "This email is already linked to another account. One email cannot be reused."
+      );
+    }
   }
 
   const user = await UserManagementModel.create({
@@ -132,7 +145,6 @@ const createUserManagement = async (data: IUserManagement) => {
 
   return user;
 };
-
 
 const getAllUsers = async () => {
   return await UserManagementModel.find();
@@ -343,7 +355,6 @@ const updateUserManagement = async (
 //   return user;
 // };
 
-
 const deleteUserManagement = async (id: string) => {
   // 1️⃣ Find UserManagement
   const userManagement = await UserManagementModel.findById(id);
@@ -363,7 +374,6 @@ const deleteUserManagement = async (id: string) => {
     message: "UserManagement and linked Account deleted successfully",
   };
 };
-
 
 const getAllSpecificUserStaf = async (userId: string) => {
   if (!userId) {
