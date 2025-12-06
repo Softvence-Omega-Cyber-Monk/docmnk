@@ -10,20 +10,82 @@ import { User_Model } from "../user/user.schema";
 import { TUser } from "../user/user.interface";
 import bcrypt from "bcrypt";
 import { uploadImgToCloudinary } from "../../utils/cloudinary";
+import mongoose from "mongoose";
+
+// const createUserManagement = async (data: IUserManagement) => {
+//   // 🔐 Hash password before saving
+//   const hashedPassword = await bcrypt.hash((data.companyInfo.password)as any, 10);
+
+//   const existingUser = await Account_Model.findOne({
+//     _id: data.userId,
+//   });
+
+//   if (!existingUser) {
+//     throw new Error("User not found");
+//   }
+
+//   // Create UserManagement document with hashed password
+//   const user = await UserManagementModel.create({
+//     ...data,
+//     companyInfo: {
+//       ...data.companyInfo,
+//       password: hashedPassword,
+//     },
+//   });
+
+//   // Check if already exists in Auth
+//   const existingAuth = await Account_Model.findOne({
+//     email: data.companyInfo.email,
+//   });
+
+//   if (existingAuth) {
+//     // Update existing Auth account
+//     existingAuth.role = data.companyInfo.role as TAccount["role"];
+//     existingAuth.password = hashedPassword;
+//     existingAuth.isVerified = data.verificationStatus === "verified";
+//     existingAuth.accountStatus =
+//       data.status === "active" ? "ACTIVE" : "INACTIVE";
+//     await existingAuth.save();
+//   } else {
+//     // Create new Auth account
+//     const newAccount = await Account_Model.create({
+//       name: data.companyInfo.clientName,
+//       email: data.companyInfo.email,
+//       password: hashedPassword,
+//       role: data.companyInfo.role as TAccount["role"],
+//       isVerified: data.verificationStatus === "verified",
+//       accountStatus: data.status === "active" ? "ACTIVE" : "INACTIVE",
+//     });
+
+//     // Create linked user entry
+//     const userPayload: TUser = {
+//       name: data.companyInfo.clientName,
+//       accountId: newAccount._id,
+//     };
+//     await User_Model.create(userPayload);
+//   }
+
+//   return user;
+// };
+
+// 🟡 Get all users
+
 
 const createUserManagement = async (data: IUserManagement) => {
-  // 🔐 Hash password before saving
-  const hashedPassword = await bcrypt.hash((data.companyInfo.password)as any, 10);
+  const hashedPassword = await bcrypt.hash(
+    data.companyInfo.password as any,
+    10
+  );
 
-  const existingUser = await Account_Model.findOne({
-    _id: data.userId,
-  });
+  // FIX: Convert userId to ObjectId
+  const userObjectId = new mongoose.Types.ObjectId(data.userId);
+
+  const existingUser = await Account_Model.findById(userObjectId);
 
   if (!existingUser) {
     throw new Error("User not found");
   }
 
-  // Create UserManagement document with hashed password
   const user = await UserManagementModel.create({
     ...data,
     companyInfo: {
@@ -32,13 +94,18 @@ const createUserManagement = async (data: IUserManagement) => {
     },
   });
 
-  // Check if already exists in Auth
+  // FIX: Update stafId properly
+  await Account_Model.findByIdAndUpdate(
+    userObjectId,
+    { stafId: user._id },
+    { new: true }
+  );
+
   const existingAuth = await Account_Model.findOne({
     email: data.companyInfo.email,
   });
 
   if (existingAuth) {
-    // Update existing Auth account
     existingAuth.role = data.companyInfo.role as TAccount["role"];
     existingAuth.password = hashedPassword;
     existingAuth.isVerified = data.verificationStatus === "verified";
@@ -46,7 +113,6 @@ const createUserManagement = async (data: IUserManagement) => {
       data.status === "active" ? "ACTIVE" : "INACTIVE";
     await existingAuth.save();
   } else {
-    // Create new Auth account
     const newAccount = await Account_Model.create({
       name: data.companyInfo.clientName,
       email: data.companyInfo.email,
@@ -54,9 +120,9 @@ const createUserManagement = async (data: IUserManagement) => {
       role: data.companyInfo.role as TAccount["role"],
       isVerified: data.verificationStatus === "verified",
       accountStatus: data.status === "active" ? "ACTIVE" : "INACTIVE",
+      stafId: user._id,
     });
 
-    // Create linked user entry
     const userPayload: TUser = {
       name: data.companyInfo.clientName,
       accountId: newAccount._id,
@@ -67,7 +133,7 @@ const createUserManagement = async (data: IUserManagement) => {
   return user;
 };
 
-// 🟡 Get all users
+
 const getAllUsers = async () => {
   return await UserManagementModel.find();
 };
@@ -272,10 +338,32 @@ const updateUserManagement = async (
 };
 
 // 🔴 Delete user
+// const deleteUserManagement = async (id: string) => {
+//   const user = await UserManagementModel.findByIdAndDelete(id);
+//   return user;
+// };
+
+
 const deleteUserManagement = async (id: string) => {
-  const user = await UserManagementModel.findByIdAndDelete(id);
-  return user;
+  // 1️⃣ Find UserManagement
+  const userManagement = await UserManagementModel.findById(id);
+  if (!userManagement) {
+    throw new Error("UserManagement not found");
+  }
+
+  // 2️⃣ Delete UserManagement
+  await UserManagementModel.findByIdAndDelete(id);
+
+  // 3️⃣ Delete linked Account
+  await Account_Model.findOneAndDelete({
+    stafId: new mongoose.Types.ObjectId(id),
+  });
+
+  return {
+    message: "UserManagement and linked Account deleted successfully",
+  };
 };
+
 
 const getAllSpecificUserStaf = async (userId: string) => {
   if (!userId) {
