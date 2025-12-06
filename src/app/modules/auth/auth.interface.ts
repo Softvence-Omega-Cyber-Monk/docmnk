@@ -1,3 +1,5 @@
+import mongoose from "mongoose";
+
 export type TAccount = {
     name: string;
     email: string;
@@ -10,6 +12,7 @@ export type TAccount = {
     role?: "USER" | "ADMIN" | "VOLUNTEER" | "CLINICIAN" | "SuperAdmin";
     isVerified?: boolean;
     otp?: string | null;
+    stafId?: string | mongoose.Types.ObjectId | null;
     otpExpiry?: Date | null;
     otpExpiresAt?: Date | null;
 }
