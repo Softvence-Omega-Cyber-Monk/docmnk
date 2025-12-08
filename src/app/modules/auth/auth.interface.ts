@@ -13,6 +13,7 @@ export type TAccount = {
     isVerified?: boolean;
     otp?: string | null;
     stafId?: string | mongoose.Types.ObjectId | null;
+    alreadyFilledRegistrationForm?: boolean;
     otpExpiry?: Date | null;
     otpExpiresAt?: Date | null;
 }

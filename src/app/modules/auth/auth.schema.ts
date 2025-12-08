@@ -19,6 +19,7 @@ const authSchema = new Schema<TAccount>(
     isVerified: { type: Boolean, default: false },
     otp: { type: String, default: null },
     stafId: { type: Schema.Types.ObjectId, ref: "UserManagement", default: null },
+    alreadyFilledRegistrationForm: { type: Boolean, default: false },
     otpExpiry: { type: Date, default: null },
     otpExpiresAt: { type: Date, default: null },
   },
