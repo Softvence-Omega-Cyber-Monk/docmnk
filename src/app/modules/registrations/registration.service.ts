@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { Account_Model } from "../auth/auth.schema";
 import { PatientManagementModel } from "../patientManagements/patientManagement.model";
 import { getPatientModel } from "./registration.model";
@@ -12,22 +13,27 @@ import { getPatientModel } from "./registration.model";
 export const createPatientRegistration = async (payload: any) => {
   const PatientModel = await getPatientModel();
 
-  // 1️⃣ Create patient registration
+  console.log("Incoming payload:", payload);
+
+  // 1️⃣ Create patient registration document
   const patient = new PatientModel(payload);
   const savedPatient = await patient.save();
 
-  // 2️⃣ Update Auth model → alreadyFilledRegistrationForm: true
+  // 2️⃣ Update Auth model → alreadyFilledRegistrationForm = true
   if (payload.userId) {
-    await Account_Model.findByIdAndUpdate(
-      payload.userId,
+    console.log("Updating user:", payload.userId);
+
+    const updatedAccount = await Account_Model.findByIdAndUpdate(
+      new mongoose.Types.ObjectId(payload.userId.trim()),  // convert to ObjectId
       { alreadyFilledRegistrationForm: true },
       { new: true }
     );
+
+    console.log("Updated Account:", updatedAccount);
   }
 
   return savedPatient;
 };
-
 
 export const getAllPatients = async () => {
   const PatientModel = await getPatientModel();

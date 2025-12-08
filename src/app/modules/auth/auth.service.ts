@@ -230,6 +230,7 @@ const login_user_from_db = async (payload: TLoginPayload) => {
     accessToken: accessToken,
     refreshToken: refreshToken,
     role: isExistAccount.role,
+    alreadyFilledRegistrationForm: isExistAccount.alreadyFilledRegistrationForm,
   };
 };
 

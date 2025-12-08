@@ -54,6 +54,7 @@ const login_user = catchAsync(async (req, res) => {
         message: 'User is logged in successful !',
         data: {
             userId: result._id,
+            alreadyFilledRegistrationForm: result.alreadyFilledRegistrationForm,
             accessToken: result.accessToken,
             role: result?.role
         },
