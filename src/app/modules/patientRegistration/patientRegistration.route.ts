@@ -69,6 +69,7 @@ import express from "express";
 import * as patientController from "./patientRegistration.controller";
 import multer from "multer";
 import { Configuration } from "../configurations/configuration.model";
+import auth from "../../middlewares/auth";
 
 const router = express.Router();
 const upload = multer({ dest: "uploads/" });
@@ -104,6 +105,11 @@ const dynamicMulterMiddleware = async (req: any, res: any, next: any) => {
 // ───── PATIENT CRUD ─────
 router.post("/create", dynamicMulterMiddleware, patientController.createPatient);
 router.patch("/update/:id", dynamicMulterMiddleware, patientController.updatePatient);
+router.get(
+  "/staff-dashboard/:adminEmail",
+  // auth("VOLUNTEER", "CLINICIAN"), // only staff
+  patientController.staffDashboardController
+);
 router.get("/getAll", patientController.getAllPatients);
 router.get("/:id", patientController.getPatientById);
 router.delete("/:id", patientController.deletePatient);
@@ -112,5 +118,6 @@ router.delete("/:id", patientController.deletePatient);
 router.post("/save-report", patientController.storeGeneratedReport);
 router.get("/reports", patientController.getAllReports);
 router.get("/get-report/:patientId", patientController.fetchReport);
+
 
 export const PatientRegistrationRoutes = router;
