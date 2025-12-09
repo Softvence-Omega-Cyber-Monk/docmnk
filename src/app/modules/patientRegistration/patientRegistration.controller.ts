@@ -318,9 +318,11 @@ import { uploadImgToCloudinary } from "../../utils/cloudinary";
 import { Configuration } from "../configurations/configuration.model";
 import {
   getAllReportsService,
+  getPatientsForStaffService,
   saveFullReport,
   updatePatientRegistration as serviceUpdatePatient,
 } from "./patientRegistration.service";
+import { UserManagementModel } from "../userManagements/userManagement.model";
 
 /**
  * Normalize input (convert JSON, arrays, etc.)
@@ -561,5 +563,28 @@ export const fetchReport = async (req: Request, res: Response) => {
     });
   } catch (err: any) {
     res.status(400).json({ success: false, message: err.message });
+  }
+};
+
+export const staffDashboardController =  async (req: Request, res: Response) => {
+  try {
+    const { adminEmail } = req.params;
+
+    if (!adminEmail) {
+      return res.status(400).json({ success: false, message: "Admin email is required" });
+    }
+
+    const patients = await getPatientsForStaffService(adminEmail);
+
+    return res.json({
+      success: true,
+      message: "All patients under admin fetched successfully",
+      data: patients,
+    });
+  } catch (err: any) {
+    return res.status(500).json({
+      success: false,
+      message: err.message || "Something went wrong",
+    });
   }
 };

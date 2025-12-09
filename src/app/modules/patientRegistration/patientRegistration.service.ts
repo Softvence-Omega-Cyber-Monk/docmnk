@@ -1,4 +1,8 @@
+import { JwtPayloadType } from "../../utils/JWT";
+import { Account_Model } from "../auth/auth.schema";
+import { CampModel } from "../eventManagements/eventManagement.model";
 import { PatientManagementModel } from "../patientManagements/patientManagement.model";
+import { UserManagementModel } from "../userManagements/userManagement.model";
 import { getPatientModel } from "./patientRegistration.model";
 
 export const createPatientRegistration = async (payload: any) => {
@@ -120,4 +124,26 @@ export const getAllReportsService = async () => {
   });
 
   return formattedReports;
+};
+
+export const getPatientsForStaffService = async (adminEmail: string) => {
+  try {
+    // 1️⃣ Get all camps assigned to this admin
+    const camps = await CampModel.find({ assignAdmin: adminEmail }).select("_id campName");
+
+    if (!camps.length) return [];
+
+    const campIds = camps.map(c => c._id.toString());
+
+    // 2️⃣ Get dynamic Patient model
+    const PatientModel = await getPatientModel();
+
+    // 3️⃣ Fetch all patients in these camps
+    const patients = await PatientModel.find({ campId: { $in: campIds } });
+
+    return patients;
+  } catch (err) {
+    console.error("Error fetching patients under admin:", err);
+    throw err;
+  }
 };

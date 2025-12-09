@@ -11,6 +11,7 @@ import { TUser } from "../user/user.interface";
 import bcrypt from "bcrypt";
 import { uploadImgToCloudinary } from "../../utils/cloudinary";
 import mongoose from "mongoose";
+import { cleanRegex } from "zod/v4/core/util.cjs";
 
 // const createUserManagement = async (data: IUserManagement) => {
 //   // 🔐 Hash password before saving
@@ -70,69 +71,195 @@ import mongoose from "mongoose";
 
 // 🟡 Get all users
 
+// const createUserManagement = async (data: IUserManagement) => {
+//   console.log("Creating UserManagement with data:", data);
+//   const hashedPassword = await bcrypt.hash(
+//     data.companyInfo.password as any,
+//     10
+//   );
+
+//   // FIX: Convert userId to ObjectId
+//   const userObjectId = new mongoose.Types.ObjectId(data.userId);
+
+//   const existingUser = await Account_Model.findById(userObjectId);
+
+//   if (!existingUser) {
+//     throw new Error("User not found");
+//   }
+
+//   // 🚨 CHECK 1: Prevent email duplicates
+//   const emailInUse = await Account_Model.findOne({
+//     email: data.companyInfo.email,
+//   });
+
+//   if (emailInUse) {
+//     // If trying to assign the same email for different staff → block
+//     if (emailInUse._id.toString() !== userObjectId.toString()) {
+//       throw new Error(
+//         "This email is already linked to another account. One email cannot be reused."
+//       );
+//     }
+//   }
+
+//   const user = await UserManagementModel.create({
+//     ...data,
+//     companyInfo: {
+//       ...data.companyInfo,
+//       password: hashedPassword,
+//     },
+//   });
+
+//   // FIX: Update stafId properly
+//   await Account_Model.findByIdAndUpdate(
+//     userObjectId,
+//     { stafId: user._id },
+
+//     { new: true }
+//   );
+
+//   const existingAuth = await Account_Model.findOne({
+//     email: data.companyInfo.email,
+//   });
+
+//   if (existingAuth) {
+//     existingAuth.role = data.companyInfo.role as TAccount["role"];
+//     existingAuth.password = hashedPassword;
+//     existingAuth.isVerified = data.verificationStatus === "verified";
+//     existingAuth.accountStatus =
+//       data.status === "active" ? "ACTIVE" : "INACTIVE";
+//     await existingAuth.save();
+//   } else {
+//     const newAccount = await Account_Model.create({
+//       name: data.companyInfo.clientName,
+//       email: data.companyInfo.email,
+//       password: hashedPassword,
+//       role: data.companyInfo.role as TAccount["role"],
+//       isVerified: data.verificationStatus === "verified",
+//       accountStatus: data.status === "active" ? "ACTIVE" : "INACTIVE",
+//       stafId: user._id,
+//     });
+
+//     const userPayload: TUser = {
+//       name: data.companyInfo.clientName,
+//       accountId: newAccount._id,
+//     };
+//     await User_Model.create(userPayload);
+//   }
+
+//   return user;
+// };
 
 const createUserManagement = async (data: IUserManagement) => {
-  const hashedPassword = await bcrypt.hash(
-    data.companyInfo.password as any,
-    10
-  );
+  // console.log("Creating UserManagement with data:", data);
 
-  // FIX: Convert userId to ObjectId
-  const userObjectId = new mongoose.Types.ObjectId(data.userId);
+  // Start a session for transaction
+  const session = await mongoose.startSession();
+  session.startTransaction();
 
-  const existingUser = await Account_Model.findById(userObjectId);
+  try {
+    const hashedPassword = await bcrypt.hash(
+      data.companyInfo.password as any,
+      10
+    );
 
-  if (!existingUser) {
-    throw new Error("User not found");
-  }
+    // Convert userId to ObjectId
+    const userObjectId = new mongoose.Types.ObjectId(data.userId);
 
-  const user = await UserManagementModel.create({
-    ...data,
-    companyInfo: {
-      ...data.companyInfo,
-      password: hashedPassword,
-    },
-  });
+    const existingUser = await Account_Model.findById(userObjectId).session(
+      session
+    );
 
-  // FIX: Update stafId properly
-  await Account_Model.findByIdAndUpdate(
-    userObjectId,
-    { stafId: user._id },
-    { new: true }
-  );
+    if (!existingUser) {
+      throw new Error("User not found");
+    }
 
-  const existingAuth = await Account_Model.findOne({
-    email: data.companyInfo.email,
-  });
-
-  if (existingAuth) {
-    existingAuth.role = data.companyInfo.role as TAccount["role"];
-    existingAuth.password = hashedPassword;
-    existingAuth.isVerified = data.verificationStatus === "verified";
-    existingAuth.accountStatus =
-      data.status === "active" ? "ACTIVE" : "INACTIVE";
-    await existingAuth.save();
-  } else {
-    const newAccount = await Account_Model.create({
-      name: data.companyInfo.clientName,
+    // Prevent email duplicates
+    const emailInUse = await Account_Model.findOne({
       email: data.companyInfo.email,
-      password: hashedPassword,
-      role: data.companyInfo.role as TAccount["role"],
-      isVerified: data.verificationStatus === "verified",
-      accountStatus: data.status === "active" ? "ACTIVE" : "INACTIVE",
-      stafId: user._id,
-    });
+    }).session(session);
 
-    const userPayload: TUser = {
-      name: data.companyInfo.clientName,
-      accountId: newAccount._id,
-    };
-    await User_Model.create(userPayload);
+    if (emailInUse && emailInUse._id.toString() !== userObjectId.toString()) {
+      throw new Error(
+        "This email is already linked to another account. One email cannot be reused."
+      );
+    }
+
+    const user = await UserManagementModel.create(
+      [
+        {
+          ...data,
+          companyInfo: {
+            ...data.companyInfo,
+            password: hashedPassword,
+          },
+        },
+      ],
+      { session }
+    );
+
+    // Update stafId properly
+    // const res1 = await Account_Model.findByIdAndUpdate(
+    //   userObjectId,
+    //   { stafId: user[0]._id, adminId: data.userId },
+    //   { new: true, session }
+    // );
+    // console.log("req.body id :", data.userId);
+    // console.log("Updated Account stafId for userId:", res1);
+
+    //  const res=  await Account_Model.findOneAndUpdate(
+    //     { _id: data.userId },
+    //     { adminId: data.userId },
+    //     { session }
+    //   );
+    //   console.log("Updated Account adminId:", res);
+
+    const existingAuth = await Account_Model.findOne({
+      email: data.companyInfo.email,
+    }).session(session);
+
+    if (existingAuth) {
+      existingAuth.role = data.companyInfo.role as TAccount["role"];
+      existingAuth.password = hashedPassword;
+      existingAuth.isVerified = data.verificationStatus === "verified";
+      existingAuth.accountStatus =
+        data.status === "active" ? "ACTIVE" : "INACTIVE";
+      await existingAuth.save({ session });
+    } else {
+      const newAccount = await Account_Model.create(
+        [
+          {
+            name: data.companyInfo.clientName,
+            email: data.companyInfo.email,
+            password: hashedPassword,
+            role: data.companyInfo.role as TAccount["role"],
+            isVerified: data.verificationStatus === "verified",
+            accountStatus: data.status === "active" ? "ACTIVE" : "INACTIVE",
+            adminId: data.userId,
+            stafId: user[0]._id,
+          },
+        ],
+        { session }
+      )
+
+      const userPayload: TUser = {
+        name: data.companyInfo.clientName,
+        accountId: newAccount[0]._id,
+      };
+      await User_Model.create([userPayload], { session });
+    }
+
+    // Commit transaction
+    await session.commitTransaction();
+    session.endSession();
+
+    return user[0];
+  } catch (err) {
+    // Rollback transaction on error
+    await session.abortTransaction();
+    session.endSession();
+    throw err;
   }
-
-  return user;
 };
-
 
 const getAllUsers = async () => {
   return await UserManagementModel.find();
@@ -343,7 +470,6 @@ const updateUserManagement = async (
 //   return user;
 // };
 
-
 const deleteUserManagement = async (id: string) => {
   // 1️⃣ Find UserManagement
   const userManagement = await UserManagementModel.findById(id);
@@ -363,7 +489,6 @@ const deleteUserManagement = async (id: string) => {
     message: "UserManagement and linked Account deleted successfully",
   };
 };
-
 
 const getAllSpecificUserStaf = async (userId: string) => {
   if (!userId) {
