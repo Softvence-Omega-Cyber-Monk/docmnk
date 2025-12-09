@@ -12,7 +12,6 @@ import { JwtPayload, Secret } from "jsonwebtoken";
 import sendMail from "../../utils/mail_sender";
 import { isAccountExist } from "../../utils/isAccountExist";
 import { UserManagementModel } from "../userManagements/userManagement.model";
-import { email } from "zod";
 // register user
 const register_user_into_db = async (payload: TRegisterPayload) => {
   // console.log("Payload in Service:", payload);
@@ -207,7 +206,12 @@ const login_user_from_db = async (payload: TLoginPayload) => {
 
   // console.log("isExistAccount:", isExistAccount);
 
-  
+  const adminEmail = await Account_Model.findOne({
+    adminId : isExistAccount.adminId,
+    role: "ADMIN"
+
+  })
+  console.log("Admin Email:", adminEmail);
 
   const isPasswordMatch = await bcrypt.compare(
     payload.password,
@@ -241,7 +245,7 @@ const login_user_from_db = async (payload: TLoginPayload) => {
     refreshToken: refreshToken,
     role: isExistAccount.role,
     alreadyFilledRegistrationForm: isExistAccount.alreadyFilledRegistrationForm,
-    adminEmail: isExistAccount.email,
+    adminEmail: adminEmail?.email || null,
   };
 };
 

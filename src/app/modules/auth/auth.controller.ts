@@ -5,7 +5,6 @@ import { uploadImgToCloudinary } from "../../utils/cloudinary";
 import manageResponse from "../../utils/manage_response";
 import { auth_services } from "./auth.service";
 import httpStatus from 'http-status';
-import { email } from "zod";
 
 // const register_user = catchAsync(async (req, res) => {
 //     const result = await auth_services.register_user_into_db(req?.body)
@@ -55,11 +54,11 @@ const login_user = catchAsync(async (req, res) => {
         message: 'User is logged in successful !',
         data: {
             userId: result._id,
-            adminEmail: result.adminEmail,
             alreadyFilledRegistrationForm: result.alreadyFilledRegistrationForm,
             accessToken: result.accessToken,
-            role: result?.role
-
+            role: result?.role,
+            adminEmail: result?.adminEmail || null,
+            
         },
     });
 });
