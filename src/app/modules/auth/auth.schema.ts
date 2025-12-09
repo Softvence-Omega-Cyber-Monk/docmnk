@@ -3,6 +3,7 @@ import { TAccount } from "./auth.interface";
 
 const authSchema = new Schema<TAccount>(
   {
+
     name: { type: String, required: true },
     email: { type: String, required: true },
     phoneNumber: { type: String, required: false },
@@ -19,6 +20,8 @@ const authSchema = new Schema<TAccount>(
     isVerified: { type: Boolean, default: false },
     otp: { type: String, default: null },
     stafId: { type: Schema.Types.ObjectId, ref: "UserManagement", default: null },
+    alreadyFilledRegistrationForm: { type: Boolean, default: false },
+    adminId: { type: Schema.Types.ObjectId, ref: "UserManagement", default: null },
     otpExpiry: { type: Date, default: null },
     otpExpiresAt: { type: Date, default: null },
   },
