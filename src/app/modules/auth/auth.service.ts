@@ -198,20 +198,66 @@ const register_user_into_db = async (payload: TRegisterPayload) => {
 // };
 
 // login user
+// const login_user_from_db = async (payload: TLoginPayload) => {
+//   // check account info
+//   const isExistAccount: any = await Account_Model.findOne({
+//     email: payload.email,
+//   });
+
+//   // console.log("isExistAccount:", isExistAccount);
+
+//   const adminEmail = await Account_Model.findOne({
+//     adminId : isExistAccount.adminId,
+//     role: "ADMIN"
+
+//   })
+//   console.log("Admin Email:", adminEmail);
+
+//   const isPasswordMatch = await bcrypt.compare(
+//     payload.password,
+//     isExistAccount.password
+//   );
+//   if (!isPasswordMatch) {
+//     throw new AppError("Invalid password", httpStatus.UNAUTHORIZED);
+//   }
+//   const accessToken = jwtHelpers.generateToken(
+//     {
+//       email: isExistAccount.email,
+//       role: isExistAccount.role,
+//     },
+//     configs.jwt.access_token as Secret,
+//     configs.jwt.access_expires as string
+//   );
+
+//   const refreshToken = jwtHelpers.generateToken(
+//     {
+//       email: isExistAccount.email,
+//       role: isExistAccount.role,
+//     },
+//     configs.jwt.refresh_token as Secret,
+//     configs.jwt.refresh_expires as string
+//   );
+
+//   return {
+//     _id: isExistAccount._id,
+
+//     accessToken: accessToken,
+//     refreshToken: refreshToken,
+//     role: isExistAccount.role,
+//     alreadyFilledRegistrationForm: isExistAccount.alreadyFilledRegistrationForm,
+//     adminEmail: adminEmail?.email || null,
+//   };
+// };
+
+
 const login_user_from_db = async (payload: TLoginPayload) => {
-  // check account info
   const isExistAccount: any = await Account_Model.findOne({
     email: payload.email,
   });
 
-  // console.log("isExistAccount:", isExistAccount);
-
-  const adminEmail = await Account_Model.findOne({
-    adminId : isExistAccount.adminId,
-    role: "ADMIN"
-
-  })
-  console.log("Admin Email:", adminEmail);
+  // ✅ Correct admin lookup
+  const adminAccount = await Account_Model.findById(isExistAccount.adminId);
+  console.log("Admin Email:", adminAccount?.email);
 
   const isPasswordMatch = await bcrypt.compare(
     payload.password,
@@ -220,6 +266,7 @@ const login_user_from_db = async (payload: TLoginPayload) => {
   if (!isPasswordMatch) {
     throw new AppError("Invalid password", httpStatus.UNAUTHORIZED);
   }
+
   const accessToken = jwtHelpers.generateToken(
     {
       email: isExistAccount.email,
@@ -240,14 +287,16 @@ const login_user_from_db = async (payload: TLoginPayload) => {
 
   return {
     _id: isExistAccount._id,
-
-    accessToken: accessToken,
-    refreshToken: refreshToken,
+    accessToken,
+    refreshToken,
     role: isExistAccount.role,
-    alreadyFilledRegistrationForm: isExistAccount.alreadyFilledRegistrationForm,
-    adminEmail: adminEmail?.email || null,
+    alreadyFilledRegistrationForm:
+      isExistAccount.alreadyFilledRegistrationForm,
+    adminEmail: adminAccount?.email || null,
   };
 };
+
+
 
 const get_my_profile_from_db = async (email: string) => {
   const isExistAccount = await isAccountExist(email);
