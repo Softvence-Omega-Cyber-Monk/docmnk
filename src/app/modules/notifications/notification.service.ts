@@ -1,39 +1,226 @@
-import { NotificationModel } from "./notification.model";
-import { sendEmail } from "../../utils/sendEmail";
-import { RecipientType, NotificationStatus } from "./notification.interface";
-import { getPatientModel } from "../patientRegistration/patientRegistration.model";
-import { Configuration } from "../configurations/configuration.model";
-import { sendWhatsApp } from "../../utils/sendWhatsApp";
-import { Account_Model } from "../auth/auth.schema";
+// import { NotificationModel } from "./notification.model";
+// import { sendEmail } from "../../utils/sendEmail";
+// import { RecipientType, NotificationStatus } from "./notification.interface";
+// import { getPatientModel } from "../patientRegistration/patientRegistration.model";
+// import { Configuration } from "../configurations/configuration.model";
+// import { sendWhatsApp } from "../../utils/sendWhatsApp";
+// import { Account_Model } from "../auth/auth.schema";
 
-// Possible dynamic email keys
-const emailKeys = [
-  "email",
-  "emailaddress",
-  "email_id",
-  "mail",
-  "patientemail",
-  "contactemail",
-  "Email",
-];
+// // Possible dynamic email keys
+// const emailKeys = [
+//   "email",
+//   "emailaddress",
+//   "email_id",
+//   "mail",
+//   "patientemail",
+//   "contactemail",
+//   "Email",
+// ];
 
-// Possible dynamic phone keys
-const phoneKeys = [
-  "phone",
-  "phonenumber",
-  "mobile",
-  "mobilenumber",
-  "contact",
-  "contactnumber",
-  "phone_no",
-  "phoneno",
-  "Phone Number",
-];
+// // Possible dynamic phone keys
+// const phoneKeys = [
+//   "phone",
+//   "phonenumber",
+//   "mobile",
+//   "mobilenumber",
+//   "contact",
+//   "contactnumber",
+//   "phone_no",
+//   "phoneno",
+//   "Phone Number",
+// ];
+
+// // // ------------------------------------------------------------
+// // // 🟢 Create Notification
+// // // ------------------------------------------------------------
+// // export const createNotification = async (data: any) => {
+// //   const notification = await NotificationModel.create(data);
+
+// //   if (
+// //     data.status === NotificationStatus.SENT ||
+// //     data.status === NotificationStatus.SCHEDULED
+// //   ) {
+// //     const sendResult = await sendNotification(notification);
+// //     notification.sentAt = new Date();
+// //     notification.sendSummary = sendResult;
+// //     await notification.save();
+// //   }
+
+// //   return notification;
+// // };
+
+// // // ------------------------------------------------------------
+// // // 🟡 Send Notification
+// // // ------------------------------------------------------------
+// // export const sendNotification = async (notificationData: any) => {
+// //   let totalRecipients = 0;
+// //   let successfulSends = 0;
+// //   let failedSends = 0;
+// //   const errors: string[] = [];
+// //   let recipientsList: any[] = [];
+
+// //   try {
+// //     const PatientRegistration = await getPatientModel();
+
+// //     // Determine recipients
+// //     switch (notificationData.recipients.type) {
+// //       case RecipientType.SPECIFIC_PATIENTS:
+// //         recipientsList = await PatientRegistration.find({
+// //           _id: { $in: notificationData.recipients.patientIds || [] },
+// //         }).lean();
+// //         break;
+
+// //       case RecipientType.ALL_PATIENTS:
+// //         recipientsList = await PatientRegistration.find().lean();
+// //         break;
+
+// //       case RecipientType.ALL_PATIENTS_WITH_UPCOMING_APPOINTMENTS:
+// //         recipientsList = await PatientRegistration.find({
+// //           "upcomingAppointments.0": { $exists: true },
+// //         }).lean();
+// //         break;
+
+// //       case RecipientType.PATIENTS_BY_CONDITION:
+// //         recipientsList = await PatientRegistration.find({
+// //           "Vital Check.disease": {
+// //             $in: notificationData.recipients.filters?.conditions || [],
+// //           },
+// //         }).lean();
+// //         break;
+
+// //       default:
+// //         recipientsList = [];
+// //     }
+
+// //     totalRecipients = recipientsList.length;
+
+// //     if (totalRecipients === 0) {
+// //       return {
+// //         notificationId: notificationData._id,
+// //         totalRecipients: 0,
+// //         successfulSends: 0,
+// //         failedSends: 0,
+// //         sendDate: new Date(),
+// //         errors: ["No recipients found"],
+// //       };
+// //     }
+
+// //     // ------------------------------------------------------------
+// //     // Find section containing dynamic email/phone fields
+// //     // ------------------------------------------------------------
+// //     const configs = await Configuration.find();
+// //     const contactSection = configs.find((section) =>
+// //       section.fields.some((f: any) => {
+// //         const field = f.fieldName?.toLowerCase();
+// //         return emailKeys.includes(field) || phoneKeys.includes(field);
+// //       })
+// //     );
+
+// //     const sectionName = contactSection?.sectionName;
+
+// //     if (!sectionName) {
+// //       return {
+// //         notificationId: notificationData._id,
+// //         totalRecipients,
+// //         successfulSends,
+// //         failedSends: totalRecipients,
+// //         sendDate: new Date(),
+// //         errors: ["No email/phone section found in configuration"],
+// //       };
+// //     }
+
+// //     // ------------------------------------------------------------
+// //     // Loop through all recipients
+// //     // ------------------------------------------------------------
+// //     for (const recipient of recipientsList) {
+// //       const sectionData: Record<string, any> = recipient[sectionName] || {};
+
+// //       // -------------------------------
+// //       // Extract dynamic email (string)
+// //       // -------------------------------
+// //       const emailEntry = Object.entries(sectionData).find(([key]) =>
+// //         emailKeys.includes(key.toLowerCase())
+// //       );
+// //       const email: string = emailEntry ? String(emailEntry[1]) : "";
+
+// //       // -------------------------------
+// //       // Extract dynamic phone (string)
+// //       // -------------------------------
+// //       const phoneEntry = Object.entries(sectionData).find(([key]) =>
+// //         phoneKeys.includes(key.toLowerCase())
+// //       );
+// //       let phone: string = phoneEntry ? String(phoneEntry[1]) : "";
+
+// //       const name: string =
+// //         sectionData.fullName ||
+// //         sectionData.name ||
+// //         recipient.fullName ||
+// //         "Unknown";
+
+// //       if (!email && !phone) {
+// //         failedSends++;
+// //         continue;
+// //       }
+
+// //       // -------------------------------
+// //       // Send Email
+// //       // -------------------------------
+// //       if (email) {
+// //         try {
+// //           await sendEmail(
+// //             email,
+// //             notificationData.subject,
+// //             notificationData.message
+// //           );
+// //           console.log(`Email sent → ${email}`);
+// //         } catch (err: any) {
+// //           failedSends++;
+// //           errors.push(`Email to ${email}: ${err.message}`);
+// //         }
+// //       }
+
+// //       // -------------------------------
+// //       // Send WhatsApp
+// //       // -------------------------------
+// //       if (phone) {
+// //         try {
+// //           // Always ensure valid whatsapp: format
+// //           phone = phone.replace(/^(\+?whatsapp:)?/, "");
+// //           phone = `whatsapp:${phone}`;
+
+// //           await sendWhatsApp(phone, notificationData.message);
+// //           console.log(`WhatsApp sent → ${phone}`);
+// //         } catch (err: any) {
+// //           failedSends++;
+// //           errors.push(`WhatsApp to ${phone}: ${err.message}`);
+// //         }
+// //       }
+
+// //       successfulSends++;
+// //     }
+// //   } catch (err: any) {
+// //     errors.push(err.message);
+// //   }
+
+// //   return {
+// //     notificationId: notificationData._id,
+// //     totalRecipients,
+// //     successfulSends,
+// //     failedSends,
+// //     sendDate: new Date(),
+// //     errors,
+// //   };
+// // };
 
 // // ------------------------------------------------------------
-// // 🟢 Create Notification
+// // CRUD
 // // ------------------------------------------------------------
-// export const createNotification = async (data: any) => {
+
+// // ------------------------------------------------------------
+// // 🟢 CREATE NOTIFICATION
+// // ------------------------------------------------------------
+
+// const createNotification = async (data: any) => {
 //   const notification = await NotificationModel.create(data);
 
 //   if (
@@ -52,7 +239,7 @@ const phoneKeys = [
 // // ------------------------------------------------------------
 // // 🟡 Send Notification
 // // ------------------------------------------------------------
-// export const sendNotification = async (notificationData: any) => {
+// const sendNotification = async (notificationData: any) => {
 //   let totalRecipients = 0;
 //   let successfulSends = 0;
 //   let failedSends = 0;
@@ -70,8 +257,14 @@ const phoneKeys = [
 //         }).lean();
 //         break;
 
+//       // case RecipientType.ALL_PATIENTS:
+//       //   recipientsList = await PatientRegistration.find().lean();
+//       //   break;
 //       case RecipientType.ALL_PATIENTS:
-//         recipientsList = await PatientRegistration.find().lean();
+//         const patients = await PatientRegistration.find().lean();
+//         const users = await Account_Model.find({ role: "USER" }).lean(); // ← added
+
+//         recipientsList = [...patients, ...users]; // merge
 //         break;
 
 //       case RecipientType.ALL_PATIENTS_WITH_UPCOMING_APPOINTMENTS:
@@ -106,37 +299,13 @@ const phoneKeys = [
 //     }
 
 //     // ------------------------------------------------------------
-//     // Find section containing dynamic email/phone fields
-//     // ------------------------------------------------------------
-//     const configs = await Configuration.find();
-//     const contactSection = configs.find((section) =>
-//       section.fields.some((f: any) => {
-//         const field = f.fieldName?.toLowerCase();
-//         return emailKeys.includes(field) || phoneKeys.includes(field);
-//       })
-//     );
-
-//     const sectionName = contactSection?.sectionName;
-
-//     if (!sectionName) {
-//       return {
-//         notificationId: notificationData._id,
-//         totalRecipients,
-//         successfulSends,
-//         failedSends: totalRecipients,
-//         sendDate: new Date(),
-//         errors: ["No email/phone section found in configuration"],
-//       };
-//     }
-
-//     // ------------------------------------------------------------
-//     // Loop through all recipients
+//     // Use patient JSON directly: "Registration" section
 //     // ------------------------------------------------------------
 //     for (const recipient of recipientsList) {
-//       const sectionData: Record<string, any> = recipient[sectionName] || {};
+//       const sectionData: Record<string, any> = recipient["Registration"] || {};
 
 //       // -------------------------------
-//       // Extract dynamic email (string)
+//       // Extract email
 //       // -------------------------------
 //       const emailEntry = Object.entries(sectionData).find(([key]) =>
 //         emailKeys.includes(key.toLowerCase())
@@ -144,7 +313,7 @@ const phoneKeys = [
 //       const email: string = emailEntry ? String(emailEntry[1]) : "";
 
 //       // -------------------------------
-//       // Extract dynamic phone (string)
+//       // Extract phone
 //       // -------------------------------
 //       const phoneEntry = Object.entries(sectionData).find(([key]) =>
 //         phoneKeys.includes(key.toLowerCase())
@@ -152,13 +321,14 @@ const phoneKeys = [
 //       let phone: string = phoneEntry ? String(phoneEntry[1]) : "";
 
 //       const name: string =
-//         sectionData.fullName ||
-//         sectionData.name ||
-//         recipient.fullName ||
+//         sectionData["Full Name"] ||
+//         sectionData["fullName"] ||
+//         sectionData["name"] ||
 //         "Unknown";
 
 //       if (!email && !phone) {
 //         failedSends++;
+//         errors.push(`No email or phone for patient: ${name}`);
 //         continue;
 //       }
 
@@ -173,6 +343,7 @@ const phoneKeys = [
 //             notificationData.message
 //           );
 //           console.log(`Email sent → ${email}`);
+//           successfulSends++;
 //         } catch (err: any) {
 //           failedSends++;
 //           errors.push(`Email to ${email}: ${err.message}`);
@@ -184,19 +355,18 @@ const phoneKeys = [
 //       // -------------------------------
 //       if (phone) {
 //         try {
-//           // Always ensure valid whatsapp: format
+//           // Ensure whatsapp format
 //           phone = phone.replace(/^(\+?whatsapp:)?/, "");
 //           phone = `whatsapp:${phone}`;
 
 //           await sendWhatsApp(phone, notificationData.message);
 //           console.log(`WhatsApp sent → ${phone}`);
+//           successfulSends++;
 //         } catch (err: any) {
 //           failedSends++;
 //           errors.push(`WhatsApp to ${phone}: ${err.message}`);
 //         }
 //       }
-
-//       successfulSends++;
 //     }
 //   } catch (err: any) {
 //     errors.push(err.message);
@@ -212,15 +382,42 @@ const phoneKeys = [
 //   };
 // };
 
-// ------------------------------------------------------------
-// CRUD
-// ------------------------------------------------------------
+
+import { NotificationModel } from "./notification.model";
+import { sendEmail } from "../../utils/sendEmail";
+import { RecipientType, NotificationStatus } from "./notification.interface";
+import { getPatientModel } from "../patientRegistration/patientRegistration.model";
+import { sendWhatsApp } from "../../utils/sendWhatsApp";
+import { Account_Model } from "../auth/auth.schema";
+
+// Dynamic email keys
+const emailKeys = [
+  "email",
+  "emailaddress",
+  "email_id",
+  "mail",
+  "patientemail",
+  "contactemail",
+  "Email",
+];
+
+// Dynamic phone keys
+const phoneKeys = [
+  "phone",
+  "phonenumber",
+  "mobile",
+  "mobilenumber",
+  "contact",
+  "contactnumber",
+  "phone_no",
+  "phoneno",
+  "Phone Number",
+];
 
 // ------------------------------------------------------------
-// 🟢 CREATE NOTIFICATION
+// CREATE NOTIFICATION
 // ------------------------------------------------------------
-
-const createNotification = async (data: any) => {
+export const createNotification = async (data: any) => {
   const notification = await NotificationModel.create(data);
 
   if (
@@ -237,9 +434,9 @@ const createNotification = async (data: any) => {
 };
 
 // ------------------------------------------------------------
-// 🟡 Send Notification
+// SEND NOTIFICATION
 // ------------------------------------------------------------
-const sendNotification = async (notificationData: any) => {
+export const sendNotification = async (notificationData: any) => {
   let totalRecipients = 0;
   let successfulSends = 0;
   let failedSends = 0;
@@ -249,7 +446,9 @@ const sendNotification = async (notificationData: any) => {
   try {
     const PatientRegistration = await getPatientModel();
 
-    // Determine recipients
+    // ------------------------------------------------------------
+    // 📌 1. COLLECT RECIPIENTS
+    // ------------------------------------------------------------
     switch (notificationData.recipients.type) {
       case RecipientType.SPECIFIC_PATIENTS:
         recipientsList = await PatientRegistration.find({
@@ -257,14 +456,10 @@ const sendNotification = async (notificationData: any) => {
         }).lean();
         break;
 
-      // case RecipientType.ALL_PATIENTS:
-      //   recipientsList = await PatientRegistration.find().lean();
-      //   break;
       case RecipientType.ALL_PATIENTS:
         const patients = await PatientRegistration.find().lean();
-        const users = await Account_Model.find({ role: "USER" }).lean(); // ← added
-
-        recipientsList = [...patients, ...users]; // merge
+        const users = await Account_Model.find({ role: "USER" }).lean();
+        recipientsList = [...patients, ...users];
         break;
 
       case RecipientType.ALL_PATIENTS_WITH_UPCOMING_APPOINTMENTS:
@@ -299,42 +494,74 @@ const sendNotification = async (notificationData: any) => {
     }
 
     // ------------------------------------------------------------
-    // Use patient JSON directly: "Registration" section
+    // 📌 2. LOOP ALL RECIPIENTS
     // ------------------------------------------------------------
     for (const recipient of recipientsList) {
-      const sectionData: Record<string, any> = recipient["Registration"] || {};
+      let email = "";
+      let phone = "";
+      let name = "";
 
-      // -------------------------------
-      // Extract email
-      // -------------------------------
-      const emailEntry = Object.entries(sectionData).find(([key]) =>
-        emailKeys.includes(key.toLowerCase())
-      );
-      const email: string = emailEntry ? String(emailEntry[1]) : "";
+      const isUser = recipient.email || recipient.phone;
 
-      // -------------------------------
-      // Extract phone
-      // -------------------------------
-      const phoneEntry = Object.entries(sectionData).find(([key]) =>
-        phoneKeys.includes(key.toLowerCase())
-      );
-      let phone: string = phoneEntry ? String(phoneEntry[1]) : "";
+      // --------------------------------------------------------------------
+      // CASE A: USER (from Account_Model)
+      // --------------------------------------------------------------------
+      if (isUser) {
+        email = recipient.email || "";
+        phone = recipient.phone || "";
+        name =
+          recipient.fullName ||
+          recipient.name ||
+          recipient.username ||
+          "Unknown";
+      }
 
-      const name: string =
-        sectionData["Full Name"] ||
-        sectionData["fullName"] ||
-        sectionData["name"] ||
-        "Unknown";
+      // --------------------------------------------------------------------
+      // CASE B: PATIENT (dynamic JSON structure)
+      // --------------------------------------------------------------------
+      else {
+        // Detect the section dynamically
+        const sectionData: Record<string, any> =
+          Object.values(recipient).find((value: any) => {
+            if (!value || typeof value !== "object") return false;
+            return Object.keys(value).some((k) =>
+              [...emailKeys, ...phoneKeys].includes(k.toLowerCase())
+            );
+          }) || {};
 
+        // Extract email
+        const emailEntry = Object.entries(sectionData).find(([key]) =>
+          emailKeys.includes(key.toLowerCase())
+        );
+        email = emailEntry ? String(emailEntry[1]) : "";
+
+        // Extract phone
+        const phoneEntry = Object.entries(sectionData).find(([key]) =>
+          phoneKeys.includes(key.toLowerCase())
+        );
+        phone = phoneEntry ? String(phoneEntry[1]) : "";
+
+        // Extract name
+        name =
+          sectionData["Full Name"] ||
+          sectionData["fullName"] ||
+          sectionData["name"] ||
+          recipient.fullName ||
+          "Unknown";
+      }
+
+      // --------------------------------------------------------------------
+      // If missing both → fail
+      // --------------------------------------------------------------------
       if (!email && !phone) {
         failedSends++;
-        errors.push(`No email or phone for patient: ${name}`);
+        errors.push(`No email or phone for: ${name}`);
         continue;
       }
 
-      // -------------------------------
-      // Send Email
-      // -------------------------------
+      // ------------------------------------------------------------
+      // 📩 Send Email
+      // ------------------------------------------------------------
       if (email) {
         try {
           await sendEmail(
@@ -350,12 +577,11 @@ const sendNotification = async (notificationData: any) => {
         }
       }
 
-      // -------------------------------
-      // Send WhatsApp
-      // -------------------------------
+      // ------------------------------------------------------------
+      // 📲 Send WhatsApp
+      // ------------------------------------------------------------
       if (phone) {
         try {
-          // Ensure whatsapp format
           phone = phone.replace(/^(\+?whatsapp:)?/, "");
           phone = `whatsapp:${phone}`;
 
@@ -372,6 +598,9 @@ const sendNotification = async (notificationData: any) => {
     errors.push(err.message);
   }
 
+  // ------------------------------------------------------------
+  // RETURN SUMMARY
+  // ------------------------------------------------------------
   return {
     notificationId: notificationData._id,
     totalRecipients,
@@ -381,6 +610,7 @@ const sendNotification = async (notificationData: any) => {
     errors,
   };
 };
+
 
 const getAllNotifications = async () => {
   return await NotificationModel.find().sort({ createdAt: -1 });
