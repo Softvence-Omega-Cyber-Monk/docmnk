@@ -239,7 +239,7 @@ const createUserManagement = async (data: IUserManagement) => {
           },
         ],
         { session }
-      )
+      );
 
       const userPayload: TUser = {
         name: data.companyInfo.clientName,
@@ -471,16 +471,20 @@ const updateUserManagement = async (
 // };
 
 const deleteUserManagement = async (id: string) => {
-  // 1️⃣ Find UserManagement
   const userManagement = await UserManagementModel.findById(id);
+  const account = await Account_Model.findOne({ stafId: id });
+
+  if (account?.role === "SuperAdmin") {
+    throw new Error("Cannot delete SuperAdmin account");
+  }
+  if (userManagement?.companyInfo.role === "SuperAdmin") {
+    throw new Error("Cannot delete SuperAdmin user");
+  }
   if (!userManagement) {
     throw new Error("UserManagement not found");
   }
-
-  // 2️⃣ Delete UserManagement
   await UserManagementModel.findByIdAndDelete(id);
 
-  // 3️⃣ Delete linked Account
   await Account_Model.findOneAndDelete({
     stafId: new mongoose.Types.ObjectId(id),
   });
